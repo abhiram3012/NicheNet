@@ -1,0 +1,208 @@
+const Hub = require('../models/Hub');
+const User = require('../models/User');
+
+// Create new hub
+const createHub = async (req, res) => {
+  try {
+    const { name, description, isPrivate } = req.body;
+    const creator = req.user.id; // From JWT
+    const hub = new Hub({
+      name,
+      description,
+      isPrivate: isPrivate || false,
+      creator,
+      members: [creator],
+      admins: [creator],
+    });
+
+    await hub.save();
+
+    // Add hub to creator's joinedHubs
+    await User.findByIdAndUpdate(creator, { $push: { joinedHubs: hub._id } });
+
+    res.status(201).json(hub);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to create hub' });
+  }
+};
+
+// Get all hubs created by the user
+const getUserCreatedHubs = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const hubs = await Hub.find({ creator: userId });
+    res.status(200).json(hubs);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch created hubs' });
+  }
+};
+
+// Get all public hubs
+const getAllHubs = async (req, res) => {
+  try {
+    const hubs = await Hub.find({ isPrivate: false }).select('-__v');
+    res.json(hubs);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch hubs' });
+  }
+};
+
+// Get hub by ID
+const getHubById = async (req, res) => {
+  try {
+    const hub = await Hub.findById(req.params.hubId)
+      .populate('members', 'username')
+      .select('-__v');
+
+    if (!hub) return res.status(404).json({ error: 'Hub not found' });
+
+    res.json(hub);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch hub' });
+  }
+};
+
+// Suggest public hubs that the user hasn't joined yet
+const getHubSuggestions = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Get the user's joined hubs
+    const user = await User.findById(userId).select('joinedHubs');
+
+    // Fetch public hubs that the user is NOT already in
+    const suggestedHubs = await Hub.find({
+      _id: { $nin: user.joinedHubs }
+    }).select('name description category members imageUrl isPrivate');
+
+    res.json(suggestedHubs);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch hub suggestions' });
+  }
+};
+
+// Join public hub
+const joinHub = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const hub = await Hub.findById(req.params.hubId);
+
+    if (!hub) return res.status(404).json({ error: 'Hub not found' });
+    if (hub.isPrivate) return res.status(403).json({ error: 'This hub is private. Send a join request.' });
+
+    if (!hub.members.includes(userId)) {
+      hub.members.push(userId);
+      await hub.save();
+      await User.findByIdAndUpdate(userId, { $push: { joinedHubs: hub._id } });
+    }
+
+    res.json({ message: 'Joined hub successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to join hub' });
+  }
+};
+
+// Leave hub
+const leaveHub = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const hub = await Hub.findById(req.params.hubId);
+
+    if (!hub) return res.status(404).json({ error: 'Hub not found' });
+
+    hub.members = hub.members.filter(id => id.toString() !== userId);
+    await hub.save();
+
+    await User.findByIdAndUpdate(userId, {
+      $pull: { joinedHubs: hub._id }
+    });
+
+    res.json({ message: 'Left the hub successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to leave hub' });
+  }
+};
+
+// Request to join private hub
+const requestToJoinPrivateHub = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const hub = await Hub.findById(req.params.hubId);
+    if (!hub) return res.status(404).json({ error: 'Hub not found' });
+    if (!hub.isPrivate) return res.status(400).json({ error: 'This hub is public. Join directly.' });
+    
+    if (!hub.pendingRequests.includes(userId)) {
+      hub.pendingRequests.push(userId);
+      await hub.save();
+    }
+    console.log(`User ${userId} requesting to join private hub ${hub._id}`);
+    res.json({ message: 'Request sent to join hub' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to request join' });
+  }
+};
+
+// Approve request (admin only)
+const approveJoinRequest = async (req, res) => {
+  try {
+    const adminId = req.user.id;
+    const { hubId, userId } = req.params;
+    const hub = await Hub.findById(hubId);
+
+    if (!hub) return res.status(404).json({ error: 'Hub not found' });
+    
+    if (hub.admins.toString() !== adminId)
+      return res.status(403).json({ error: 'Only the hub creator can approve requests' });
+    
+    if (!hub.pendingRequests.includes(userId)) {
+      return res.status(400).json({ error: 'User did not request to join' });
+    }
+
+    hub.members.push(userId);
+    hub.pendingRequests = hub.pendingRequests.filter(id => id.toString() !== userId);
+    await hub.save();
+
+    await User.findByIdAndUpdate(userId, { $push: { joinedHubs: hub._id } });
+
+    res.json({ message: 'User added to hub' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to approve request' });
+  }
+};
+
+// Reject request (admin only)
+const rejectJoinRequest = async (req, res) => {
+  try {
+    const adminId = req.user.id;
+    const { hubId, userId } = req.params;
+    const hub = await Hub.findById(hubId);
+
+    if (!hub) return res.status(404).json({ error: 'Hub not found' });
+    if (hub.admins.toString() !== adminId)
+      return res.status(403).json({ error: 'Only the hub creator can reject requests' });
+
+    hub.pendingRequests = hub.pendingRequests.filter(id => id.toString() !== userId);
+    await hub.save();
+
+    res.json({ message: 'Join request rejected' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to reject request' });
+  }
+};
+
+module.exports = {
+  createHub,
+  getAllHubs,
+  getHubById,
+  joinHub,
+  leaveHub,
+  requestToJoinPrivateHub,
+  approveJoinRequest,
+  rejectJoinRequest,
+  getUserCreatedHubs,
+  getHubSuggestions
+};
