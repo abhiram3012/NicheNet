@@ -1,5 +1,6 @@
 const Hub = require('../models/Hub');
 const User = require('../models/User');
+const Post = require('../models/Post'); // assuming Post model exists
 
 // Create new hub
 const createHub = async (req, res) => {
@@ -194,6 +195,72 @@ const rejectJoinRequest = async (req, res) => {
   }
 };
 
+// Get pending join requests for a private hub (admin only)
+const getPendingJoinRequests = async (req, res) => {
+  try {
+    const hub = await Hub.findById(req.params.hubId).populate('pendingRequests', 'username email');
+    if (!hub) return res.status(404).json({ error: 'Hub not found' });
+
+    res.json(hub.pendingRequests);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch join requests' });
+  }
+};
+
+// Get members of a hub
+const getHubMembers = async (req, res) => {
+  try {
+    const hub = await Hub.findById(req.params.hubId).populate('members', 'username email');
+    if (!hub) return res.status(404).json({ error: 'Hub not found' });
+
+    res.json(hub.members);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch members' });
+  }
+};
+
+// Get overview stats for a hub
+const getHubOverviewStats = async (req, res) => {
+  try {
+    const hubId = req.params.hubId;
+    const hub = await Hub.findById(hubId);
+    if (!hub) return res.status(404).json({ error: 'Hub not found' });
+
+    const totalPosts = await Post.countDocuments({ hub: hubId });
+
+    res.json({
+      totalMembers: hub.members.length,
+      totalPosts,
+      pendingJoinRequests: hub.pendingRequests.length,
+      createdAt: hub.createdAt,
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch overview stats' });
+  }
+};
+
+// Delete a hub (only creator can delete)
+const deleteHub = async (req, res) => {
+  try {
+    const { hubId } = req.params;
+    const userId = req.user.id;
+
+    const hub = await Hub.findById(hubId);
+    if (!hub) return res.status(404).json({ error: 'Hub not found' });
+
+    if (hub.creator.toString() !== userId) {
+      return res.status(403).json({ error: 'Only the creator can delete this hub' });
+    }
+
+    await Hub.findByIdAndDelete(hubId);
+    await Post.deleteMany({ hub: hubId });
+
+    res.json({ message: 'Hub deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete hub' });
+  }
+};
+
 module.exports = {
   createHub,
   getAllHubs,
@@ -204,5 +271,9 @@ module.exports = {
   approveJoinRequest,
   rejectJoinRequest,
   getUserCreatedHubs,
-  getHubSuggestions
+  getHubSuggestions,
+  getPendingJoinRequests,
+  getHubMembers,
+  getHubOverviewStats,
+  deleteHub,
 };
