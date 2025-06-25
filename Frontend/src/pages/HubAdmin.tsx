@@ -1,11 +1,11 @@
-
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import axios from 'axios';
 import { 
   Settings, 
   Users, 
@@ -30,82 +30,121 @@ const HubAdmin = () => {
   const { hubId } = useParams();
   const [activeTab, setActiveTab] = useState('overview');
   const { toast } = useToast();
+  const [hubData, setHubData] = useState(null);
+  const [joinRequests, setJoinRequests] = useState([]);
+  const [members, setMembers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock admin data
-  const hubData = {
-    id: hubId,
-    name: 'Photography',
-    description: 'Share your best shots and learn new techniques from fellow photographers around the world.',
-    memberCount: 15420,
-    createdAt: '2024-01-15',
-    totalPosts: 342,
-    activeMembers: 89,
-    pendingPosts: 5,
-    reportedContent: 2,
-    pendingJoinRequests: 8
-  };
+  useEffect(() => {
+    const fetchAdminData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const token = localStorage.getItem('token');
+        const headers = {
+          Authorization: `Bearer ${token}`,
+        };
+
+        const [overviewRes, requestsRes, membersRes] = await Promise.all([
+          axios.get(`http://localhost:5000/api/hubs/${hubId}/admin/overview`, { headers }),
+          axios.get(`http://localhost:5000/api/hubs/${hubId}/admin/join-requests`, { headers }),
+          axios.get(`http://localhost:5000/api/hubs/${hubId}/admin/members`, { headers }),
+        ]);
+
+        setHubData(overviewRes.data);
+        setJoinRequests(requestsRes.data || []);
+        setMembers(membersRes.data || []);
+        console.log(membersRes.data.length);
+      } catch (error) {
+        console.error('Error fetching admin data:', error);
+        setError(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAdminData();
+  }, [hubId]);
 
   const stats = [
-    { label: 'Total Members', value: '15,420', icon: Users, color: 'blue' },
-    { label: 'Total Posts', value: '342', icon: MessageSquare, color: 'green' },
-    { label: 'Active Today', value: '89', icon: BarChart3, color: 'purple' },
-    { label: 'Pending Requests', value: '8', icon: Clock, color: 'orange' }
+    { label: 'Total Members', value: hubData?.totalMembers || 0, icon: Users, color: 'blue' },
+    { label: 'Total Posts', value: hubData?.totalPosts || 0, icon: MessageSquare, color: 'green' },
+    { label: 'Active Today', value: hubData?.activeMembers || 0, icon: BarChart3, color: 'purple' },
+    { label: 'Pending Requests', value: hubData?.pendingJoinRequests || 0, icon: Clock, color: 'orange' }
   ];
 
-  // Mock join requests data
-  const joinRequests = [
-    {
-      id: '1',
-      username: '@newphotographer',
-      message: 'I\'m passionate about landscape photography and would love to share my work and learn from this community.',
-      portfolioUrl: 'https://portfolio.example.com',
-      experience: '5 years of amateur photography, specializing in nature and wildlife shots.',
-      submittedAt: '2h ago',
-      status: 'pending'
-    },
-    {
-      id: '2',
-      username: '@streetartist',
-      message: 'Street photography enthusiast looking to connect with like-minded photographers and improve my skills.',
-      portfolioUrl: 'https://streetphoto.example.com',
-      experience: 'Professional photographer for 3 years, focusing on urban environments.',
-      submittedAt: '4h ago',
-      status: 'pending'
-    },
-    {
-      id: '3',
-      username: '@portraitlover',
-      message: 'I specialize in portrait photography and would love to contribute to this community with tutorials and feedback.',
-      portfolioUrl: '',
-      experience: 'Self-taught photographer with 2 years experience in portrait work.',
-      submittedAt: '1d ago',
-      status: 'pending'
+  const handleJoinRequestAction = async (requestId, action, username) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(
+        `http://localhost:5000/api/hubs/${hubId}/${action}/${requestId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setJoinRequests(prev => prev.filter(r => r.id !== requestId));
+      toast({
+        title: `Request ${action}d!`,
+        description: `${username}'s request has been ${action}d.`,
+      });
+    } catch (err) {
+      console.error(`Failed to ${action} join request:`, err);
+      toast({ title: 'Error', description: `Failed to ${action} join request.` });
     }
-  ];
-
-  const recentMembers = [
-    { username: '@newbie123', joinedAt: '2h ago', status: 'active' },
-    { username: '@photoFan', joinedAt: '4h ago', status: 'active' },
-    { username: '@artlover99', joinedAt: '1d ago', status: 'pending' }
-  ];
-
-  const pendingPosts = [
-    { id: '1', title: 'Amazing sunset shot', author: '@newcomer', reportCount: 0 },
-    { id: '2', title: 'Street photography tips', author: '@streetphoto', reportCount: 1 }
-  ];
-
-  const handleJoinRequestAction = (requestId: string, action: 'approve' | 'reject', username: string) => {
-    toast({
-      title: action === 'approve' ? "Request approved!" : "Request rejected",
-      description: `${username}'s join request has been ${action}d.`,
-    });
-    // Here you would typically update the state or make an API call
   };
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <main className="max-w-7xl mx-auto px-4 py-6">
+          <div className="text-center py-12">
+            <AlertTriangle className="w-12 h-12 mx-auto text-red-500 mb-4" />
+            <h2 className="text-xl font-medium mb-2">Error loading hub data</h2>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+              Retry
+            </Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <main className="max-w-7xl mx-auto px-4 py-6">
+          <div className="space-y-6">
+            <div className="h-12 w-64 bg-gray-200 rounded animate-pulse mb-8"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {Array(4).fill(0).map((_, i) => (
+                <Card key={i}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mb-2"></div>
+                        <div className="h-6 w-16 bg-gray-200 rounded animate-pulse"></div>
+                      </div>
+                      <div className="p-3 rounded-full bg-gray-200 animate-pulse">
+                        <div className="w-6 h-6"></div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
       <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="mb-8">
@@ -121,8 +160,17 @@ const HubAdmin = () => {
           
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl text-gray-600">{hubData.name}</h2>
-              <p className="text-sm text-gray-500">Created on {hubData.createdAt}</p>
+              {hubData ? (
+                <>
+                  <h2 className="text-xl text-gray-600">{hubData.name}</h2>
+                  <p className="text-sm text-gray-500">Created on {hubData.createdAt}</p>
+                </>
+              ) : (
+                <div className="space-y-2">
+                  <div className="h-6 w-48 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+                </div>
+              )}
             </div>
             <div className="flex gap-3">
               <Link to={`/hub/${hubId}`}>
@@ -164,7 +212,6 @@ const HubAdmin = () => {
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="join-requests">Join Requests</TabsTrigger>
             <TabsTrigger value="members">Members</TabsTrigger>
-            <TabsTrigger value="content">Content</TabsTrigger>
             <TabsTrigger value="moderation">Moderation</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
@@ -220,72 +267,65 @@ const HubAdmin = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="w-5 h-5 text-orange-500" />
-                  Pending Join Requests ({joinRequests.length})
+                  <span>Pending Join Requests</span>
+                  <Badge variant="outline" className="ml-1">
+                    {joinRequests.length}
+                  </Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {joinRequests.length === 0 ? (
-                  <p className="text-gray-600 text-center py-8">No pending join requests.</p>
+                  <div className="flex flex-col items-center justify-center py-12 space-y-3">
+                    <Clock className="w-10 h-10 text-gray-400" />
+                    <p className="text-gray-500">No pending requests</p>
+                    <p className="text-sm text-gray-400">When users request to join, they'll appear here</p>
+                  </div>
                 ) : (
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     {joinRequests.map((request) => (
-                      <div key={request.id} className="border rounded-lg p-6 space-y-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h3 className="font-semibold text-lg">{request.username}</h3>
-                              <Badge variant="secondary" className="bg-orange-100 text-orange-800">
-                                <Clock className="w-3 h-3 mr-1" />
-                                {request.submittedAt}
-                              </Badge>
-                            </div>
-                            
-                            <div className="space-y-3">
-                              <div>
-                                <h4 className="font-medium text-sm text-gray-700 mb-1">Introduction Message:</h4>
-                                <p className="text-gray-600 text-sm">{request.message}</p>
-                              </div>
-                              
-                              {request.portfolioUrl && (
-                                <div>
-                                  <h4 className="font-medium text-sm text-gray-700 mb-1">Portfolio:</h4>
-                                  <a 
-                                    href={request.portfolioUrl} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
-                                  >
-                                    {request.portfolioUrl}
-                                    <ExternalLink className="w-3 h-3" />
-                                  </a>
+                      <div 
+                        key={request.id || request._id || request.username}
+                        className="border rounded-lg p-5 hover:shadow-sm transition-shadow"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 space-y-3">
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2">
+                                <div className="font-medium text-gray-900">
+                                  {request.username}
                                 </div>
-                              )}
-                              
-                              <div>
-                                <h4 className="font-medium text-sm text-gray-700 mb-1">Experience:</h4>
-                                <p className="text-gray-600 text-sm">{request.experience}</p>
+                                <Badge variant="secondary" className="bg-orange-50 text-orange-700">
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  {request.submittedAt}
+                                </Badge>
                               </div>
                             </div>
+
+                            {request.message && (
+                              <div className="bg-gray-50 p-3 rounded-md">
+                                <p className="text-sm text-gray-600">{request.message}</p>
+                              </div>
+                            )}
                           </div>
                         </div>
-                        
-                        <div className="flex gap-3 pt-4 border-t">
-                          <Button 
-                            size="sm" 
-                            className="bg-green-600 hover:bg-green-700"
-                            onClick={() => handleJoinRequestAction(request.id, 'approve', request.username)}
-                          >
-                            <Check className="w-4 h-4 mr-2" />
-                            Approve
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className="border-red-300 text-red-600 hover:bg-red-50"
-                            onClick={() => handleJoinRequestAction(request.id, 'reject', request.username)}
+
+                        <div className="flex justify-end gap-3 pt-4 mt-4 border-t">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                            onClick={() => handleJoinRequestAction(request._id, 'reject', request.username)}
                           >
                             <X className="w-4 h-4 mr-2" />
                             Reject
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700"
+                            onClick={() => handleJoinRequestAction(request._id, 'approve', request.username)}
+                          >
+                            <Check className="w-4 h-4 mr-2" />
+                            Approve
                           </Button>
                         </div>
                       </div>
@@ -299,48 +339,19 @@ const HubAdmin = () => {
           <TabsContent value="members" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Recent Members</CardTitle>
+                <CardTitle>Members ({members.length})</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentMembers.map((member, index) => (
-                    <div key={index} className="flex items-center justify-between py-2">
+                  {members.map((member) => (
+                    <div key={member._id} className="flex items-center justify-between py-2">
                       <div>
                         <span className="font-medium">{member.username}</span>
-                        <span className="text-sm text-gray-500 ml-2">joined {member.joinedAt}</span>
                       </div>
                       <div className="flex gap-2">
-                        <Badge variant={member.status === 'active' ? 'default' : 'secondary'}>
-                          {member.status}
-                        </Badge>
+                        <Badge variant="default">Active</Badge>
                         <Button size="sm" variant="outline">
                           <Ban className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="content" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Pending Posts</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {pendingPosts.map((post) => (
-                    <div key={post.id} className="flex items-center justify-between py-3 border-b">
-                      <div>
-                        <p className="font-medium">{post.title}</p>
-                        <p className="text-sm text-gray-500">by {post.author}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline">Approve</Button>
-                        <Button size="sm" variant="outline">
-                          <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>

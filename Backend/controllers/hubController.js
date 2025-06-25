@@ -140,7 +140,6 @@ const requestToJoinPrivateHub = async (req, res) => {
       hub.pendingRequests.push(userId);
       await hub.save();
     }
-    console.log(`User ${userId} requesting to join private hub ${hub._id}`);
     res.json({ message: 'Request sent to join hub' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to request join' });
@@ -198,7 +197,7 @@ const rejectJoinRequest = async (req, res) => {
 // Get pending join requests for a private hub (admin only)
 const getPendingJoinRequests = async (req, res) => {
   try {
-    const hub = await Hub.findById(req.params.hubId).populate('pendingRequests', 'username email');
+    const hub = await Hub.findById(req.params.hubId).populate('pendingRequests', 'username');
     if (!hub) return res.status(404).json({ error: 'Hub not found' });
 
     res.json(hub.pendingRequests);
@@ -210,9 +209,8 @@ const getPendingJoinRequests = async (req, res) => {
 // Get members of a hub
 const getHubMembers = async (req, res) => {
   try {
-    const hub = await Hub.findById(req.params.hubId).populate('members', 'username email');
+    const hub = await Hub.findById(req.params.hubId).populate('members', 'username');
     if (!hub) return res.status(404).json({ error: 'Hub not found' });
-
     res.json(hub.members);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch members' });
@@ -229,6 +227,7 @@ const getHubOverviewStats = async (req, res) => {
     const totalPosts = await Post.countDocuments({ hub: hubId });
 
     res.json({
+      name: hub.name,
       totalMembers: hub.members.length,
       totalPosts,
       pendingJoinRequests: hub.pendingRequests.length,

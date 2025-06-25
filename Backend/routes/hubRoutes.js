@@ -17,6 +17,7 @@ const {
   getHubMembers,
   deleteHub,
 } = require('../controllers/hubController');
+const Hub = require('../models/Hub');
 
 // Create a new hub (authenticated users)
 router.post('/create', authenticate, createHub);
@@ -29,6 +30,19 @@ router.get('/my-created', authenticate, getUserCreatedHubs);
 
 // Get hub suggestions based on user activity (authenticated users)
 router.get('/suggestions', authenticate, getHubSuggestions);
+
+// Search hubs by name
+router.get('/search', async (req, res) => {
+  const { query } = req.query;
+  try {
+    const hubs = await Hub.find({
+      name: { $regex: query, $options: 'i' } // case-insensitive match
+    });
+    res.json(hubs);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch hubs' });
+  }
+});
 
 // Get a single hub by ID (no auth required)
 router.get('/:hubId', getHubById);
@@ -59,6 +73,5 @@ router.get('/:hubId/admin/members', authenticate, getHubMembers);
 
 // Delete a hub (admin only)
 router.delete('/:hubId/admin', authenticate, deleteHub);
-
 
 module.exports = router;

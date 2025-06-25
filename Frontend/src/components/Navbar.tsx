@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { Search, Plus, Bell, User, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Link } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,22 +10,57 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { toast } from 'sonner'; // or useToast() if using ShadCN version
+import { toast } from 'sonner';
+import axios from 'axios';
 
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem('token'); // Clear token
-    toast.success('Logged out successfully'); // Optional toast
-    navigate('/signin'); // Redirect to sign-in page
+    localStorage.removeItem('token');
+    toast.success('Logged out successfully');
+    navigate('/signin');
+  };
+
+  // Debounced search effect
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      const fetchHubs = async () => {
+        if (searchQuery.trim() === '') {
+          setSearchResults([]);
+          setShowDropdown(false);
+          return;
+        }
+
+        try {
+          const res = await axios.get(`http://localhost:5000/api/hubs/search?query=${searchQuery}`);
+          setSearchResults(res.data);
+          setShowDropdown(true);
+        } catch (error) {
+          console.error('Search error:', error);
+        }
+      };
+
+      fetchHubs();
+    }, 300); // Debounce delay
+
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery]);
+
+  const handleResultClick = (hubId) => {
+    navigate(`/hub/${hubId}`);
+    setSearchQuery('');
+    setSearchResults([]);
+    setShowDropdown(false);
   };
 
   return (
     <nav className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Logo & Brand */}
+      <div className="max-w-7xl mx-auto flex items-center justify-between relative">
+        {/* Logo */}
         <Link to="/dashboard" className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">H</span>
@@ -34,8 +68,8 @@ const Navbar = () => {
           <h1 className="text-xl font-bold text-gray-800">HobbyHub</h1>
         </Link>
 
-        {/* Search Bar */}
-        <div className="flex-1 max-w-md mx-4">
+        {/* Search */}
+        <div className="flex-1 max-w-md mx-4 relative">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
@@ -45,11 +79,25 @@ const Navbar = () => {
               className="pl-10 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
             />
           </div>
+
+          {/* Dropdown results */}
+          {showDropdown && searchResults.length > 0 && (
+            <ul className="absolute z-50 bg-white border border-gray-200 shadow-md w-full mt-1 rounded-md max-h-60 overflow-y-auto">
+              {searchResults.map((hub) => (
+                <li
+                  key={hub._id}
+                  onClick={() => handleResultClick(hub._id)}
+                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                >
+                  {hub.name}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         {/* Actions */}
         <div className="flex items-center space-x-3">
-
           <Button variant="ghost" size="sm" className="relative">
             <Bell className="w-4 h-4" />
             <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>

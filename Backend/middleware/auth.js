@@ -6,7 +6,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 // Middleware to verify token and extract user info
 const authenticate = (req, res, next) => {
   const authHeader = req.headers.authorization;
-
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Authorization token missing' });
   }
