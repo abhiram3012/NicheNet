@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users, Crown, ImagePlus } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { Settings } from 'lucide-react';
 import axios from 'axios';
 
 interface HubHeaderProps {
@@ -100,7 +102,7 @@ const HubHeader: React.FC<HubHeaderProps> = ({ hubData }) => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             {!isCreator && (
               <Button
                 onClick={handleJoinLeave}
@@ -112,6 +114,7 @@ const HubHeader: React.FC<HubHeaderProps> = ({ hubData }) => {
                 {isJoined ? 'Leave Hub' : 'Join Hub'}
               </Button>
             )}
+
             {(isCreator || isJoined) && (
               <Button
                 variant="default"
@@ -120,6 +123,15 @@ const HubHeader: React.FC<HubHeaderProps> = ({ hubData }) => {
               >
                 Create Post
               </Button>
+            )}
+
+            {isCreator && (
+              <Link to={`/hub/${hubId}/admin`}>
+                <Button className="bg-yellow-500 hover:bg-yellow-600">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Admin Panel
+                </Button>
+              </Link>
             )}
           </div>
         </div>

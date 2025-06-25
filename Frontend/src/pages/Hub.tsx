@@ -94,18 +94,6 @@ const Hub = () => {
       <main className="max-w-7xl mx-auto px-4 py-6">
         <HubHeader hubData={hubData} />
 
-        {/* Creator Admin Controls */}
-        {hubData.isCreator && (
-          <div className="mt-4 mb-6">
-            <Link to={`/hub/${hubId}/admin`}>
-              <Button className="bg-yellow-500 hover:bg-yellow-600">
-                <Settings className="w-4 h-4 mr-2" />
-                Admin Panel
-              </Button>
-            </Link>
-          </div>
-        )}
-
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
           {/* Main Content */}
           <div className="lg:col-span-3">
