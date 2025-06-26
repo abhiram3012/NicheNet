@@ -260,6 +260,34 @@ const deleteHub = async (req, res) => {
   }
 };
 
+// Update hub banner (only creator)
+const updateHubBanner = async (req, res) => {
+  try {
+    const hubId = req.params.hubId;
+    const userId = req.user.id;
+
+    const hub = await Hub.findById(hubId);
+    if (!hub) return res.status(404).json({ error: 'Hub not found' });
+
+    if (hub.creator.toString() !== userId) {
+      return res.status(403).json({ error: 'Only the creator can update the banner' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'No banner image uploaded' });
+    }
+
+    const bannerUrl = `/uploads/posts/${req.file.filename}`;
+    hub.bannerUrl = bannerUrl;
+    await hub.save();
+
+    res.json({ bannerUrl });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update banner' });
+  }
+};
+
 module.exports = {
   createHub,
   getAllHubs,
@@ -275,4 +303,5 @@ module.exports = {
   getHubMembers,
   getHubOverviewStats,
   deleteHub,
+  updateHubBanner,
 };

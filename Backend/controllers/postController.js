@@ -93,10 +93,22 @@ const dislikePost = async (req, res) => {
   }
 };
 
+// Get all posts by a user in a specific hub
+const getUserHubPosts = async (req, res) => {
+  const { hubId, userId } = req.params;
+  try {
+    const posts = await Post.find({ hub: hubId, author: userId }).populate('author', 'username');
+    res.json(posts);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 module.exports = {
   createPost,
   getPostsInHub,
   getPostById,
   likePost,
   dislikePost,
+  getUserHubPosts,
 };

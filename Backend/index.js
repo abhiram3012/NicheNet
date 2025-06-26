@@ -6,6 +6,7 @@ const hubRoutes = require('./routes/hubRoutes');
 const postRoutes = require('./routes/postRoutes');
 const commentRoutes = require('./routes/commentRoutes');
 const authRoutes = require('./routes/authRoutes');
+const pollRoutes = require('./routes/pollRoutes.js');
 const cors = require('cors');
 
 const app = express();
@@ -24,6 +25,7 @@ app.use('/api/hubs', hubRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/polls', pollRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

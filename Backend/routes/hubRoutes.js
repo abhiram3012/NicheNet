@@ -16,8 +16,10 @@ const {
   getPendingJoinRequests,
   getHubMembers,
   deleteHub,
+  updateHubBanner,
 } = require('../controllers/hubController');
 const Hub = require('../models/Hub');
+const upload = require('../middleware/upload');
 
 // Create a new hub (authenticated users)
 router.post('/create', authenticate, createHub);
@@ -73,5 +75,8 @@ router.get('/:hubId/admin/members', authenticate, getHubMembers);
 
 // Delete a hub (admin only)
 router.delete('/:hubId/admin', authenticate, deleteHub);
+
+// Upload banner (creator only)
+router.post('/:hubId/upload-banner', authenticate, upload.single('banner'), updateHubBanner);
 
 module.exports = router;

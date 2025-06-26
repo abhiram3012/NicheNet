@@ -5,7 +5,9 @@ import { Users, Crown, ImagePlus } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { Settings } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import axios from 'axios';
+import { useToast } from '@/hooks/use-toast';
 
 interface HubHeaderProps {
   hubData: {
@@ -25,10 +27,13 @@ const HubHeader: React.FC<HubHeaderProps> = ({ hubData }) => {
     bannerUrl,
     isCreator = false,
   } = hubData;
-
+  {/* Add these inside your component */}
+  const [bannerUrl1, setBannerUrl] = useState(hubData?.bannerUrl || '');
+  const [isUploading, setIsUploading] = useState(false);
   const [isJoined, setIsJoined] = useState(hubData.isJoined || false);
   const [memberCount, setMemberCount] = useState(hubData.memberCount || 0);
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { hubId } = useParams(); // Assuming route is like /hub/:hubId
 
   const handleJoinLeave = async () => {
@@ -60,24 +65,78 @@ const HubHeader: React.FC<HubHeaderProps> = ({ hubData }) => {
     }
   };
 
+  const handleBannerChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('banner', file);
+
+    try {
+      setIsUploading(true);
+      const token = localStorage.getItem('token');
+
+      const res = await axios.post(
+        `http://localhost:5000/api/hubs/${hubId}/upload-banner`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      setBannerUrl(res.data.bannerUrl);
+      toast({
+        title: 'Banner updated',
+        description: 'Your hub banner was updated successfully.',
+      });
+    } catch (err) {
+      console.error('Banner upload failed:', err);
+      toast({
+        title: 'Error',
+        description: 'Failed to upload banner image.',
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-      {/* Banner area */}
-      <div className="relative h-48 bg-gray-100 flex items-center justify-center">
-        {bannerUrl ? (
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${bannerUrl})` }}
+      {/* Banner Area */}
+      <div className="relative h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
+        {bannerUrl1 ? (
+          <img
+            src={`http://localhost:5000${bannerUrl1}`}
+            alt="Banner"
+            className="absolute inset-0 w-full h-full object-cover object-top"
           />
         ) : (
           isCreator && (
-            <div className="text-center z-10">
+            <div className="z-10 text-center">
               <ImagePlus className="w-6 h-6 mx-auto mb-1 text-gray-500" />
               <p className="text-sm text-gray-500">Add a banner image</p>
             </div>
           )
         )}
         <div className="absolute inset-0 bg-black opacity-20" />
+
+        {isCreator && (
+          <label className="absolute bottom-2 right-2 bg-white px-3 py-1 rounded shadow cursor-pointer text-sm font-medium flex items-center gap-2">
+            {isUploading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Uploading...
+              </>
+            ) : (
+              <>
+                <ImagePlus className="w-4 h-4" /> Upload Banner
+              </>
+            )}
+            <input type="file" accept="image/*" onChange={handleBannerChange} className="hidden" />
+          </label>
+        )}
       </div>
 
       {/* Hub Info */}

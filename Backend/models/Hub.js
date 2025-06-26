@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const hubSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
   description: String,
-  banner: String,
+  bannerUrl: String,
   creator: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   members: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   admins: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
