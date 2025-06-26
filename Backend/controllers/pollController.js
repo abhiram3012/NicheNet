@@ -75,8 +75,30 @@ const getHubPolls = async (req, res) => {
   }
 };
 
+const getUserPolls = async (req, res) => {
+  try {
+    const polls = await Poll.find({
+      hub: req.params.hubId,
+      author: req.params.userId
+    })
+      .populate("author", "username")
+      .sort({ createdAt: -1 });
+
+    res.json(polls.map(p => ({
+      id: p._id,
+      title: p.title,
+      totalVotes: p.totalVotes,
+      timePosted: p.createdAt
+    })));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
 module.exports = {
   createPoll,
     votePoll,
-    getHubPolls
+    getHubPolls,
+    getUserPolls
 };
