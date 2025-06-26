@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +30,7 @@ interface PostCardProps {
 }
 
 const PostCard: React.FC<PostCardProps> = ({ post, hubCreatorId }) => {
+  const { hubId } = useParams();
   const {
     _id,
     title,
@@ -89,9 +91,11 @@ const PostCard: React.FC<PostCardProps> = ({ post, hubCreatorId }) => {
             </div>
 
             {/* Title */}
-            <h3 className="text-lg font-semibold text-gray-800 mb-2 hover:text-blue-600 cursor-pointer">
-              {title}
-            </h3>
+            <Link to={`/hub/${hubId}/post/${_id}`}>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2 hover:text-blue-600 cursor-pointer">
+                {title}
+              </h3>
+            </Link>
 
             {/* Content */}
             <p className="text-gray-600 mb-3 line-clamp-3">{content}</p>

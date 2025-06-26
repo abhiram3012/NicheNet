@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Settings, BarChart3, Users, HelpCircle, MessageSquare, FileQuestion } from 'lucide-react';
 import { decodeJWT } from '@/utils/decodeJWT';
 import { EmptyState } from '@/components/EmptyState';
+import AskQuestionDialog from '@/components/AskQuestionDialog';
 
 
 interface Hub {
@@ -76,9 +77,12 @@ const Hub = () => {
       });
       const pollData = await pollsRes.json();
       setPolls(pollData);
-      pollData.forEach(poll => {
-        console.log(`Poll: ${poll.title}, Total Votes: ${poll.totalVotes}, ${poll.author.username} created this poll`);
+
+      const questionsRes = await fetch(`http://localhost:5000/api/questions/hub/${hubId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
+      const questionsData = await questionsRes.json();
+      setQuestions(questionsData);
     };
 
     if (hubData) fetchExtraData();
@@ -286,10 +290,12 @@ const Hub = () => {
               
               <TabsContent value="questions" className="space-y-4">
                 <div className="mb-4">
-                  <Button className="bg-purple-600 hover:bg-purple-700">
-                    <HelpCircle className="w-4 h-4 mr-2" />
-                    Ask a Question
-                  </Button>
+                   <AskQuestionDialog>
+                    <Button className="bg-purple-600 hover:bg-purple-700">
+                      <HelpCircle className="w-4 h-4 mr-2" />
+                      Ask a Question
+                    </Button>
+                  </AskQuestionDialog>
                 </div>
 
                 {questions.length === 0 ? (
@@ -300,7 +306,7 @@ const Hub = () => {
                   />
                 ) : (
                   questions.map((question) => (
-                    <QuestionCard key={question._id} question={question} />
+                    <QuestionCard key={question.id} question={question} />
                   ))
                 )}
               </TabsContent>

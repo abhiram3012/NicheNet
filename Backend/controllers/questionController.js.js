@@ -24,7 +24,7 @@ const getHubQuestions = async (req, res) => {
     const questions = await Question.find({ hub: req.params.hubId })
       .populate("author", "username")
       .sort({ createdAt: -1 });
-
+    
     const formatted = questions.map(q => ({
       id: q._id,
       title: q.title,
@@ -73,8 +73,50 @@ const getUserQuestions = async (req, res) => {
   }
 };
 
+const answerQuestion = async (req, res) => {
+  try {
+    const { questionId } = req.params;
+    const { content } = req.body;
+
+    if (!content) {
+      return res.status(400).json({ message: "Answer content is required." });
+    }
+
+    const question = await Question.findById(questionId);
+    if (!question) {
+      return res.status(404).json({ message: "Question not found." });
+    }
+    const newAnswer = {
+      content,
+      author: req.user.id,
+    };
+
+    question.answers.push(newAnswer);
+    await question.save();
+
+    res.status(201).json({ message: "Answer posted successfully." });
+  } catch (error) {
+    console.error("Error posting answer:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// GET /api/questions/:id
+const getQuestionById = async (req, res) => {
+  try {
+    const question = await Question.findById(req.params.id).populate('answers.author', 'name');
+    if (!question) return res.status(404).json({ message: 'Not found' });
+    res.json(question);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
 module.exports = {
   createQuestion,
     getHubQuestions,
-    getUserQuestions
+    getUserQuestions,
+    answerQuestion,
+    getQuestionById
 };

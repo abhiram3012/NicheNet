@@ -15,6 +15,8 @@ import NotFound from "./pages/NotFound";
 import CreatePostForm from "./components/CreatePostForm";
 import JoinRequest from "./pages/JoinRequest";
 import CreatePoll from "./pages/CreatePoll";
+import QuestionDetails from "./pages/QuestionDetails";
+import PostDetails from "./pages/PostDetails";
 import AdminProtectedRoute from "./utils/AdminProtectedRoute";
 
 // ✅ Add this component
@@ -43,6 +45,8 @@ const App = () => (
           <Route path="/hub/:hubId/admin" element={<AdminProtectedRoute><HubAdmin /></AdminProtectedRoute>} />
           <Route path="/hub/:hubId/create-post" element={<ProtectedRoute><CreatePostForm /></ProtectedRoute>} />
           <Route path="/hub/:hubId/create-poll" element={<ProtectedRoute><CreatePoll /></ProtectedRoute>} />
+          <Route path="/hub/:hubId/question/:questionId" element={<ProtectedRoute><QuestionDetails /></ProtectedRoute>} />
+          <Route path="/hub/:hubId/post/:postId" element={<ProtectedRoute><PostDetails /></ProtectedRoute>} />
 
           {/* Public Routes */}
           <Route path="/signin" element={<SignIn />} />

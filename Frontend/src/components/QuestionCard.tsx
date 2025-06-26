@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronUp, ChevronDown, MessageSquare, Crown } from 'lucide-react';
+import { Link, useParams } from 'react-router-dom';
+import AnswerQuestionDialog from '@/components/AnswerQuestionDialog';
 
 interface Answer {
   id: string;
@@ -27,8 +29,10 @@ interface QuestionCardProps {
 }
 
 const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
+    const { hubId } = useParams();
   const [showAnswers, setShowAnswers] = useState(false);
   const {
+    id,
     title,
     content,
     author,
@@ -38,6 +42,36 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
     timePosted,
     answers
   } = question;
+  const [allAnswers, setAllAnswers] = useState<Answer[]>(question.answers);
+
+    const fetchAnswers = async () => {
+    try {
+        const res = await fetch(`http://localhost:5000/api/questions/${id}`);
+        if (!res.ok) throw new Error("Failed to fetch answers");
+        const data = await res.json();
+        setAllAnswers(data.answers);
+    } catch (err) {
+        console.error(err);
+    }
+    };
+
+  // Add this function inside QuestionCard component (above return)
+    const postAnswer = async (questionId: string, content: string) => {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`http://localhost:5000/api/questions/${questionId}/answers`, {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content }),
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to post answer');
+    }
+    };
 
   return (
     <Card className={`bg-white hover:shadow-md transition-shadow ${isCreator ? 'ring-2 ring-yellow-200 border-yellow-300' : ''}`}>
@@ -59,9 +93,11 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
               <span>•</span>
               <span>{timePosted}</span>
             </div>
-            <CardTitle className="text-lg hover:text-purple-600 cursor-pointer">
-              {title}
-            </CardTitle>
+            <Link to={`/hub/${hubId}/question/${id}`}>
+              <CardTitle className="text-lg hover:text-purple-600 cursor-pointer">
+                {title}
+              </CardTitle>
+            </Link>
           </div>
           <div className="flex flex-col items-center space-y-1 min-w-[60px]">
             <Button variant="ghost" size="sm" className="p-1 h-8 w-8 hover:bg-orange-100">
@@ -89,15 +125,21 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
             <span>{answersCount} answers</span>
           </Button>
           
-          <Button variant="outline" size="sm" className="text-purple-600 hover:text-purple-700">
-            Answer
-          </Button>
+          <AnswerQuestionDialog
+            questionId={question.id}
+            questionTitle={question.title}
+            onAnswerPosted={fetchAnswers}
+            >
+            <Button variant="outline" size="sm">
+                Answer
+            </Button>
+            </AnswerQuestionDialog>
         </div>
 
         {showAnswers && (
           <div className="border-t pt-4 space-y-4">
             <h4 className="font-medium text-gray-800">Answers</h4>
-            {answers.map((answer) => (
+            {allAnswers.map((answer) => (
               <div key={answer.id} className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-start gap-3">
                   <div className="flex flex-col items-center space-y-1 min-w-[40px]">
