@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,37 +7,52 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronUp, ChevronDown, ArrowLeft, Crown } from 'lucide-react';
 import AnswerQuestionDialog from '@/components/AnswerQuestionDialog';
+import { timeAgo } from '@/utils/timeAgo';
+
+interface Answer {
+  id: string;
+  content: string;
+  author: string;
+  upvotes: number;
+  timePosted: string;
+}
+
+interface Question {
+  id: string;
+  title: string;
+  content: string;
+  author: string;
+  upvotes: number;
+  timePosted: string;
+  answers: Answer[];
+  isCreator?: boolean;
+}
 
 const QuestionDetails = () => {
   const { hubId, questionId } = useParams();
+  const [question, setQuestion] = useState<Question | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mock question data (in real app, this would come from API)
-  const question = {
-    id: questionId,
-    title: 'How do I achieve better focus in low light conditions?',
-    content: 'I\'ve been struggling with getting sharp focus when shooting in low light. Any tips on settings or techniques?',
-    author: '@beginnerphoto',
-    isCreator: false,
-    upvotes: 15,
-    answersCount: 2,
-    timePosted: '3h ago',
-    answers: [
-      {
-        id: '1',
-        content: 'Try using single point autofocus and increase your ISO. Also consider using a tripod for stability.',
-        author: '@proshoter',
-        upvotes: 12,
-        timePosted: '2h ago'
-      },
-      {
-        id: '2',
-        content: 'Focus peaking on your camera can help a lot. Also, manual focus with live view zoom is very effective.',
-        author: '@techphoto',
-        upvotes: 8,
-        timePosted: '1h ago'
+  useEffect(() => {
+    const fetchQuestion = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/questions/${questionId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
+        const data = await res.json();
+        setQuestion(data);
+      } catch (err) {
+        console.error('Failed to fetch question', err);
+      } finally {
+        setLoading(false);
       }
-    ]
-  };
+    };
+
+    fetchQuestion();
+  }, [questionId]);
+
+  if (loading) return <p className="text-center mt-10">Loading...</p>;
+  if (!question) return <p className="text-center mt-10 text-red-500">Question not found.</p>;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -71,7 +86,7 @@ const QuestionDetails = () => {
                     )}
                   </div>
                   <span>•</span>
-                  <span>{question.timePosted}</span>
+                  <span>{timeAgo(question.timePosted)}</span>
                 </div>
                 <CardTitle className="text-xl text-purple-600 mb-4">
                   {question.title}
@@ -122,7 +137,7 @@ const QuestionDetails = () => {
                     <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
                       <span className="font-medium">{answer.author}</span>
                       <span>•</span>
-                      <span>{answer.timePosted}</span>
+                      <span>{timeAgo(question.timePosted)}</span>
                     </div>
                     <p className="text-gray-700">{answer.content}</p>
                   </div>

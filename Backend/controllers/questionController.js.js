@@ -23,6 +23,7 @@ const getHubQuestions = async (req, res) => {
   try {
     const questions = await Question.find({ hub: req.params.hubId })
       .populate("author", "username")
+      .populate('answers.author', 'username') 
       .sort({ createdAt: -1 });
     
     const formatted = questions.map(q => ({
@@ -31,6 +32,7 @@ const getHubQuestions = async (req, res) => {
       content: q.content,
       author: q.author.username,
       upvotes: q.upvotes,
+      downvotes: q.downvotes,
       answersCount: q.answers.length,
       timePosted: q.createdAt,
       isCreator: req.user.id === q.author._id.toString(),
@@ -39,6 +41,7 @@ const getHubQuestions = async (req, res) => {
         content: a.content,
         author: a.author.username,
         upvotes: a.upvotes,
+        downvotes: a.downvotes,
         timePosted: a.createdAt
       }))
     }));
@@ -104,9 +107,28 @@ const answerQuestion = async (req, res) => {
 // GET /api/questions/:id
 const getQuestionById = async (req, res) => {
   try {
-    const question = await Question.findById(req.params.id).populate('answers.author', 'name');
+    const question = await Question.findById(req.params.questionId).populate('author', 'username').populate('answers.author', 'username') ;
     if (!question) return res.status(404).json({ message: 'Not found' });
-    res.json(question);
+    const formatted = {
+      id: question._id,
+      title: question.title,
+      content: question.content,
+      author: question.author.username,
+      upvotes: question.upvotes,
+      downvotes: question.downvotes,
+      answersCount: question.answers.length,
+      timePosted: question.createdAt,
+      isCreator: req.user.id === question.author._id.toString(),
+      answers: question.answers.map(a => ({
+        id: a._id,
+        content: a.content,
+        author: a.author.username,
+        upvotes: a.upvotes,
+        downvotes: a.downvotes,
+        timePosted: a.createdAt
+      }))
+    };
+    res.json(formatted);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }

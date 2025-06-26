@@ -14,6 +14,7 @@ import { Settings, BarChart3, Users, HelpCircle, MessageSquare, FileQuestion } f
 import { decodeJWT } from '@/utils/decodeJWT';
 import { EmptyState } from '@/components/EmptyState';
 import AskQuestionDialog from '@/components/AskQuestionDialog';
+import { timeAgo } from '@/utils/timeAgo';
 
 
 interface Hub {
@@ -77,6 +78,7 @@ const Hub = () => {
       });
       const pollData = await pollsRes.json();
       setPolls(pollData);
+      console.log('Polls fetched:', pollData);
 
       const questionsRes = await fetch(`http://localhost:5000/api/questions/hub/${hubId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -132,7 +134,8 @@ const Hub = () => {
         body: JSON.stringify({ optionText })
       });
       const updatedPoll = await res.json();
-      setPolls(prev => prev.map(p => p._id === pollId ? updatedPoll : p));
+      console.log('Vote successful:', updatedPoll);
+      setPolls(prev => prev.map(p => p.pollId === pollId ? updatedPoll : p));
     } catch (err) {
       console.error('Voting error:', err);
     }
@@ -235,18 +238,18 @@ const Hub = () => {
                   />
                 ) : (
                 polls.map((poll) => (
-                  <Card key={poll._id} className="bg-white">
+                  <Card key={poll.pollId} className="bg-white">
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <div>
                           <CardTitle className="text-lg">{poll.title}</CardTitle>
                           <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                            <span>by {poll.author.username}</span>
+                            <span>by {poll.author}</span>
                             {poll.isCreator && (
                               <Badge className="bg-yellow-100 text-yellow-800 text-xs">Creator</Badge>
                             )}
                             <span>•</span>
-                            <span>{poll.timePosted}</span>
+                            <span>{timeAgo(poll.createdAt)}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -263,7 +266,7 @@ const Hub = () => {
                               <Button
                                 variant={poll.hasVoted && poll.userVote === option.text ? "default" : "outline"}
                                 className="flex-1 justify-start"
-                                onClick={() => handleVote(poll._id, option.text)}
+                                onClick={() => handleVote(poll.pollId, option.text)}
                                 disabled={poll.hasVoted}
                               >
                                 {option.text}

@@ -37,39 +37,73 @@ const votePoll = async (req, res) => {
     if (existingVoteIndex !== -1) {
       const previousOptionText = poll.voters[existingVoteIndex].optionText;
 
-      if (previousOptionText === optionText) {
-        return res.status(400).json({ message: 'You already voted for this option' });
+      if (previousOptionText !== optionText) {
+        // Change vote: decrement old, increment new
+        const previousOption = poll.options.find(opt => opt.text === previousOptionText);
+        if (previousOption) {
+          previousOption.votes = Math.max(0, previousOption.votes - 1);
+        }
+        poll.voters[existingVoteIndex].optionText = optionText;
+        selectedOption.votes++;
       }
-
-      // Decrement previous vote
-      const previousOption = poll.options.find(opt => opt.text === previousOptionText);
-      if (previousOption) {
-        previousOption.votes = Math.max(0, previousOption.votes - 1);
-      }
-
-      // Update to new option
-      poll.voters[existingVoteIndex].optionText = optionText;
+      // else: same option re-voted, do nothing but still send poll data back
     } else {
       // New vote
       poll.voters.push({ userId: req.user.id, optionText });
+      selectedOption.votes++;
     }
 
-    // Increment vote on new option
-    selectedOption.votes++;
-
     await poll.save();
-    res.json(poll);
+
+    // Calculate total votes and percentages
+    const totalVotes = poll.options.reduce((sum, opt) => sum + opt.votes, 0);
+    const optionsWithPercentage = poll.options.map(opt => ({
+      text: opt.text,
+      votes: opt.votes,
+      percentage: totalVotes === 0 ? 0 : ((opt.votes / totalVotes) * 100).toFixed(1)
+    }));
+
+    res.json({
+      pollId: poll._id,
+      title: poll.title,
+      author: poll.author.username,
+      options: optionsWithPercentage,
+      totalVotes,
+      createdAt: poll.createdAt,
+      userVotedOption: optionText
+    });
 
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
+
 const getHubPolls = async (req, res) => {
   const { hubId } = req.params;
   try {
     const polls = await Poll.find({ hub: hubId }).populate('author', 'username');
-    res.json(polls);
+
+    const formattedPolls = polls.map(poll => {
+      const totalVotes = poll.options.reduce((sum, opt) => sum + opt.votes, 0);
+      const optionsWithPercentage = poll.options.map(opt => ({
+        text: opt.text,
+        votes: opt.votes,
+        percentage: totalVotes === 0 ? 0 : ((opt.votes / totalVotes) * 100).toFixed(1)
+      }));
+
+      return {
+        pollId: poll._id,
+        title: poll.title,
+        author: poll.author.username,
+        options: optionsWithPercentage,
+        totalVotes,
+        createdAt: poll.createdAt,
+        voters: poll.voters // optional: can remove or keep if frontend uses it
+      };
+    });
+
+    res.json(formattedPolls);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
