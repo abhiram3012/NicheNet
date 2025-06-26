@@ -6,17 +6,18 @@ const {
   likeComment,
   dislikeComment
 } = require('../controllers/commentController');
+const authenticate = require('../middleware/auth');
 
 // Add a new comment to a post
-router.post('/', addComment);
+router.post('/',authenticate, addComment);
 
 // Get all comments for a post
-router.get('/post/:postId', getCommentsByPost);
+router.get('/post/:postId',authenticate, getCommentsByPost);
 
 // Like a comment
-router.post('/:commentId/like', likeComment);
+router.post('/:commentId/like',authenticate, likeComment);
 
 // Dislike a comment
-router.post('/:commentId/dislike', dislikeComment);
+router.post('/:commentId/dislike',authenticate, dislikeComment);
 
 module.exports = router;

@@ -1,24 +1,36 @@
 const Comment = require('../models/Comment');
+const Post = require('../models/Post');
 
 // Add a comment (or reply)
 const addComment = async (req, res) => {
   try {
-    const { postId, userId, content, parentCommentId, isAnonymous } = req.body;
+    const { postId, content, parentCommentId, isAnonymous } = req.body;
+    const userId = req.user.id;
 
+    // 1. Create the comment
     const newComment = new Comment({
       content,
-      createdBy: userId,
+      author: userId,
       post: postId,
       isAnonymous: isAnonymous || false,
-      parentComment: parentCommentId || null
+      parentComment: parentCommentId || null,
     });
 
     await newComment.save();
+
+    // 2. Push the comment ID to the post's comments array
+    await Post.findByIdAndUpdate(postId, {
+      $push: { comments: newComment._id },
+    });
+
+    // 3. Return the created comment
     res.status(201).json(newComment);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Failed to add comment' });
   }
 };
+
 
 // Get all comments for a post (with nested replies)
 const getCommentsByPost = async (req, res) => {

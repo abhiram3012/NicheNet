@@ -78,7 +78,6 @@ const Hub = () => {
       });
       const pollData = await pollsRes.json();
       setPolls(pollData);
-      console.log('Polls fetched:', pollData);
 
       const questionsRes = await fetch(`http://localhost:5000/api/questions/hub/${hubId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -134,7 +133,6 @@ const Hub = () => {
         body: JSON.stringify({ optionText })
       });
       const updatedPoll = await res.json();
-      console.log('Vote successful:', updatedPoll);
       setPolls(prev => prev.map(p => p.pollId === pollId ? updatedPoll : p));
     } catch (err) {
       console.error('Voting error:', err);

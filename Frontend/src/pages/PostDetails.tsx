@@ -6,47 +6,107 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronUp, ChevronDown, ArrowLeft, Crown, MessageSquare } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import axios from 'axios'; // Install this if not already
+import { timeAgo } from '@/utils/timeAgo';
 
 const PostDetails = () => {
   const { hubId, postId } = useParams();
+  const [post, setPost] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [newComment, setNewComment] = useState('');
 
-  // Mock post data (in real app, this would come from API)
-  const post = {
-    id: postId,
-    title: 'Golden Hour Landscape from Yesterday\'s Hike',
-    content: 'Captured this amazing sunset during my hike in the mountains. The lighting was absolutely perfect, and I couldn\'t resist taking this shot. Used a Canon 5D Mark IV with 24-70mm lens. Settings were ISO 100, f/8, 1/125s. The key was waiting for the right moment when the light hit the peaks just right.',
-    author: '@naturelover',
-    authorAnonymous: false,
-    isCreator: false,
-    upvotes: 127,
-    downvotes: 3,
-    commentsCount: 23,
-    timePosted: '2h ago',
-    imageUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop&crop=center',
-    comments: [
-      {
-        id: '1',
-        content: 'Absolutely stunning shot! The colors are incredible. What time did you take this?',
-        author: '@photoEnthusiast',
-        upvotes: 8,
-        timePosted: '1h ago'
-      },
-      {
-        id: '2',
-        content: 'Great composition! The foreground rocks really add depth to the image.',
-        author: '@landscapePro',
-        upvotes: 12,
-        timePosted: '45m ago'
-      },
-      {
-        id: '3',
-        content: 'Thanks for sharing the camera settings! Really helpful for beginners like me.',
-        author: '@learningPhoto',
-        upvotes: 5,
-        timePosted: '30m ago'
+  useEffect(() => {
+    const fetchPost = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5000/api/posts/${postId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}` // Assuming token is in localStorage
+        }
+      });
+        setPost(res.data);
+      } catch (err) {
+        setError('Failed to load post');
+      } finally {
+        setLoading(false);
       }
-    ]
+    };
+    fetchPost();
+  }, [hubId, postId]);
+
+  const fetchPostAgain = async () => {
+  try {
+    const res = await axios.get(`http://localhost:5000/api/posts/${postId}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+  } catch (err) {
+    console.error('Failed to refresh post', err);
+  }
+};
+
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return;
+
+    try {
+      const res = await axios.post(`http://localhost:5000/api/comments/`, {
+        postId,
+        content: newComment, 
+      },{headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}` // Assuming token is in localStorage
+      }});
+      fetchPostAgain(); // Refresh the post to include the new comment
+      setNewComment('');
+    } catch (err) {
+      console.error('Failed to post comment', err);
+    }
   };
+
+  const handleVote = async (type) => {
+    if (loading) return;
+
+    setLoading(true);
+    try {
+      const endpoint = type === 'up' ? `http://localhost:5000/api/posts/${postId}/like` : `http://localhost:5000/api/posts/${postId}/dislike`;
+      const token = localStorage.getItem('token');
+      await axios.put(endpoint, {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      fetchPostAgain(); // refetch or update the post after vote
+    } catch (err) {
+      console.error('Failed to vote:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <main className="max-w-4xl mx-auto px-4 py-6">
+        <p className="text-center text-gray-500">Loading post...</p>
+      </main>
+    </div>
+  );
+}
+
+if (error) {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <main className="max-w-4xl mx-auto px-4 py-6">
+        <p className="text-center text-red-500">{error}</p>
+      </main>
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -68,13 +128,27 @@ const PostDetails = () => {
             <div className="flex gap-4">
               {/* Voting Section */}
               <div className="flex flex-col items-center space-y-1 min-w-[60px]">
-                <Button variant="ghost" size="sm" className="p-1 h-8 w-8 hover:bg-orange-100">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`p-1 h-8 w-8 hover:bg-orange-100`}
+                  disabled={loading}
+                  onClick={() => handleVote('up')}
+                >
                   <ChevronUp className="w-4 h-4 text-orange-600" />
                 </Button>
+
                 <span className="text-sm font-medium text-gray-700">
-                  {post.upvotes - post.downvotes}
+                  {post.upvotes.length - post.downvotes.length}
                 </span>
-                <Button variant="ghost" size="sm" className="p-1 h-8 w-8 hover:bg-blue-100">
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`p-1 h-8 w-8 hover:bg-blue-100`}
+                  disabled={loading}
+                  onClick={() => handleVote('down')}
+                >
                   <ChevronDown className="w-4 h-4 text-blue-600" />
                 </Button>
               </div>
@@ -84,7 +158,7 @@ const PostDetails = () => {
                 <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
                   <div className="flex items-center gap-2">
                     <span className={`font-medium ${post.isCreator ? 'text-yellow-700' : ''}`}>
-                      {post.authorAnonymous ? 'Anonymous' : post.author}
+                      {post.isAnonymous ? 'Anonymous' : post.author.username}
                     </span>
                     {post.isCreator && (
                       <Badge className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 flex items-center gap-1">
@@ -94,7 +168,7 @@ const PostDetails = () => {
                     )}
                   </div>
                   <span>•</span>
-                  <span>{post.timePosted}</span>
+                  <span>{timeAgo(post.createdAt)}</span>
                 </div>
 
                 <h1 className="text-2xl font-semibold text-gray-800 mb-4">
@@ -105,10 +179,10 @@ const PostDetails = () => {
                   {post.content}
                 </p>
 
-                {post.imageUrl && (
+                {post.image && (
                   <div className="mb-4">
                     <img 
-                      src={post.imageUrl} 
+                      src={`http://localhost:5000${post.image}`} 
                       alt="Post content"
                       className="rounded-lg w-full max-w-2xl object-cover"
                     />
@@ -126,13 +200,22 @@ const PostDetails = () => {
               <MessageSquare className="w-5 h-5" />
               {post.comments.length} {post.comments.length === 1 ? 'Comment' : 'Comments'}
             </h2>
-            <Button className="bg-green-600 hover:bg-green-700">
-              Add Comment
-            </Button>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="Write a comment..."
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                className="border px-3 py-2 rounded w-full"
+              />
+              <Button className="bg-green-600 hover:bg-green-700" onClick={handleAddComment}>
+                Add Comment
+              </Button>
+            </div>
           </div>
           
           {post.comments.map((comment) => (
-            <Card key={comment.id} className="bg-white">
+            <Card key={comment._id} className="bg-white">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <div className="flex flex-col items-center space-y-1">
@@ -147,9 +230,9 @@ const PostDetails = () => {
                   
                   <div className="flex-1">
                     <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                      <span className="font-medium">{comment.author}</span>
+                      <span className="font-medium">{comment.author.username}</span>
                       <span>•</span>
-                      <span>{comment.timePosted}</span>
+                      <span>{timeAgo(comment.createdAt)}</span>
                     </div>
                     <p className="text-gray-700">{comment.content}</p>
                   </div>

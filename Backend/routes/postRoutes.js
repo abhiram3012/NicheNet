@@ -21,10 +21,10 @@ router.get('/hub/:hubId',authenticate, getPostsInHub);
 router.get('/:postId',authenticate, getPostById);
 
 // Like a post
-router.post('/:postId/like',authenticate, likePost);
+router.put('/:postId/like',authenticate, likePost);
 
 // Dislike a post
-router.post('/:postId/dislike',authenticate, dislikePost);
+router.put('/:postId/dislike',authenticate, dislikePost);
 
 // Get all posts by a user in a specific hub
 router.get('/hub/:hubId/user/:userId', authenticate, getUserHubPosts);
