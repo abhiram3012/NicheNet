@@ -6,7 +6,6 @@ const commentSchema = new mongoose.Schema({
   parentComment: { type: mongoose.Schema.Types.ObjectId, ref: 'Comment', default: null }, // for replies
 
   content: String,
-  isAnonymous: { type: Boolean, default: false },
 
   // Vote tracking
   upvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

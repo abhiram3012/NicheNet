@@ -1,6 +1,7 @@
 const Post = require('../models/Post');
 const Hub = require('../models/Hub');
 const User = require('../models/User');
+const Comment = require('../models/Comment');
 
 // Create a new post
 const createPost = async (req, res) => {
@@ -46,37 +47,56 @@ const getPostsInHub = async (req, res) => {
 // Get a specific post
 const getPostById = async (req, res) => {
   try {
-
-    // Populate both author and hub (to check creator)
+    // Fetch post with author and hub info
     const post = await Post.findById(req.params.postId)
-    .populate('author', 'username') // post author
-    .populate('hub', 'creator')     // hub creator
-    .populate({
-      path: 'comments',
-      select: 'content author createdAt',
-      populate: {
-        path: 'author',
-        select: 'username'
-      }
-    });
+      .populate('author', 'username')
+      .populate('hub', 'creator')
+      .lean();
 
     if (!post) return res.status(404).json({ error: 'Post not found' });
 
-    // Check if the post author is also the hub creator
+    // Fetch all comments for this post with their authors
+    const comments = await Comment.find({ post: req.params.postId })
+      .populate('author', 'username')
+      .lean();
+
+    // Build nested comments structure
+    const commentMap = {};
+    const rootComments = [];
+
+    comments.forEach(comment => {
+      comment.replies = [];
+      commentMap[comment._id.toString()] = comment;
+    });
+
+    comments.forEach(comment => {
+      if (comment.parentComment) {
+        const parent = commentMap[comment.parentComment.toString()];
+        if (parent) {
+          parent.replies.push(comment);
+        }
+      } else {
+        rootComments.push(comment);
+      }
+    });
+
+    // Check if post author is also hub creator
     const isCreator = post.author._id.toString() === post.hub.creator.toString();
 
-    // Convert to object and add isCreator field
-    const postWithCreatorInfo = {
-      ...post.toObject(),
-      isCreator
+    // Add isCreator flag and nested comments to post object
+    const postWithComments = {
+      ...post,
+      isCreator,
+      comments: rootComments,
     };
 
-    res.json(postWithCreatorInfo);
+    res.json(postWithComments);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch post' });
   }
 };
+
 
 // Like a post
 const likePost = async (req, res) => {

@@ -230,6 +230,7 @@ if (error) {
           {/* Display each comment */}
           {post.comments.map((comment) => (
             <CommentCard
+              postId={postId}
               key={comment._id}
               comment={comment}
               onReplySubmit={fetchPostAgain} // refresh post after reply

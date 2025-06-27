@@ -4,7 +4,7 @@ const Post = require('../models/Post');
 // Add a comment (or reply)
 const addComment = async (req, res) => {
   try {
-    const { postId, content, parentCommentId, isAnonymous } = req.body;
+    const { postId, content, parentCommentId } = req.body;
     const userId = req.user.id;
 
     // 1. Create the comment
@@ -12,7 +12,6 @@ const addComment = async (req, res) => {
       content,
       author: userId,
       post: postId,
-      isAnonymous: isAnonymous || false,
       parentComment: parentCommentId || null,
     });
 
@@ -35,32 +34,28 @@ const addComment = async (req, res) => {
 // Get all comments for a post (with nested replies)
 const getCommentsByPost = async (req, res) => {
   try {
-    const comments = await Comment.find({ post: req.params.postId })
-      .populate('createdBy', 'username')
+    const { postId } = req.params;
+    const { parentCommentId } = req.query;
+
+    // Build query
+    const query = { post: postId };
+    if (parentCommentId) {
+      query.parentComment = parentCommentId;  // fetch only replies to that comment
+    } else {
+      query.parentComment = null; // fetch only root comments if no parentCommentId specified
+    }
+
+    const comments = await Comment.find(query)
+      .populate('author', 'username')  // fixed from createdBy to author (matches your schema)
       .lean();
 
-    // Organize into threaded structure
-    const commentMap = {};
-    const rootComments = [];
-
-    comments.forEach(comment => {
-      comment.replies = [];
-      commentMap[comment._id] = comment;
-    });
-
-    comments.forEach(comment => {
-      if (comment.parentComment) {
-        commentMap[comment.parentComment]?.replies.push(comment);
-      } else {
-        rootComments.push(comment);
-      }
-    });
-
-    res.json(rootComments);
+    res.json(comments);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Failed to fetch comments' });
   }
 };
+
 
 // Like a comment
 const likeComment = async (req, res) => {
