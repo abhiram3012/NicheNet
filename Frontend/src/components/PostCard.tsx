@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronUp, ChevronDown, MessageSquare, Crown } from 'lucide-react';
+import axios from 'axios';
 
 interface Post {
   _id: string;
@@ -16,8 +17,8 @@ interface Post {
     username: string;
   };
   hub: string;
-  upvotes: number;
-  downvotes: number;
+  upvotes: string[];
+  downvotes: string[];
   comments: string[];
   createdAt: string;
   updatedAt: string;
@@ -31,6 +32,9 @@ interface PostCardProps {
 
 const PostCard: React.FC<PostCardProps> = ({ post, hubCreatorId }) => {
   const { hubId } = useParams();
+  const [loading, setLoading] = useState(false);
+  const [postData, setPostData] = useState(post);
+  const [netVotes, setNetVotes] = useState(post.upvotes.length - post.downvotes.length);
   const {
     _id,
     title,
@@ -44,11 +48,45 @@ const PostCard: React.FC<PostCardProps> = ({ post, hubCreatorId }) => {
     createdAt,
   } = post;
 
+  const postId = _id; // Assuming _id is the post ID
+
   const isCreator = hubCreatorId ;
 
-  const netVotes = upvotes - downvotes;
-
   const timePosted = new Date(createdAt).toLocaleString(); // You can format this better using dayjs or date-fns
+
+  const fetchPostAgain = async () => {
+  try {
+    const res = await axios.get(`http://localhost:5000/api/posts/${postId}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    setPostData(res.data);
+    setNetVotes(res.data.upvotes.length - res.data.downvotes.length);
+  } catch (err) {
+    console.error('Failed to refresh post', err);
+  }
+};
+
+const handleVote = async (type) => {
+    if (loading) return;
+
+    setLoading(true);
+    try {
+      const endpoint = type === 'up' ? `http://localhost:5000/api/posts/${postId}/like` : `http://localhost:5000/api/posts/${postId}/dislike`;
+      const token = localStorage.getItem('token');
+      await axios.put(endpoint, {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      fetchPostAgain(); // refetch or update the post after vote
+    } catch (err) {
+      console.error('Failed to vote:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Card
@@ -60,13 +98,25 @@ const PostCard: React.FC<PostCardProps> = ({ post, hubCreatorId }) => {
         <div className="flex gap-4">
           {/* Voting Section */}
           <div className="flex flex-col items-center space-y-1 min-w-[60px]">
-            <Button variant="ghost" size="sm" className="p-1 h-8 w-8 hover:bg-orange-100">
-              <ChevronUp className="w-4 h-4 text-orange-600" />
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`p-1 h-8 w-8 hover:bg-orange-100`}
+              disabled={loading}
+              onClick={() => handleVote('up')}
+            >
+              <ChevronUp className="w-4 h-4 text-orange-600 " />
             </Button>
             <span className="text-sm font-medium text-gray-700">
               {netVotes}
             </span>
-            <Button variant="ghost" size="sm" className="p-1 h-8 w-8 hover:bg-blue-100">
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`p-1 h-8 w-8 hover:bg-blue-100`}
+              disabled={loading}
+              onClick={() => handleVote('down')}
+            >
               <ChevronDown className="w-4 h-4 text-blue-600" />
             </Button>
           </div>

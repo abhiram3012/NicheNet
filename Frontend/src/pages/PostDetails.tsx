@@ -9,11 +9,14 @@ import { ChevronUp, ChevronDown, ArrowLeft, Crown, MessageSquare } from 'lucide-
 import { useEffect, useState } from 'react';
 import axios from 'axios'; // Install this if not already
 import { timeAgo } from '@/utils/timeAgo';
+import { MessageCircle, SendHorizontal } from 'lucide-react'; // Add icons
+import CommentCard from '@/components/CommentCard';
 
 const PostDetails = () => {
   const { hubId, postId } = useParams();
   const [post, setPost] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // for page load
+  const [votingLoading, setVotingLoading] = useState(false); // for voting only
   const [error, setError] = useState('');
   const [newComment, setNewComment] = useState('');
 
@@ -43,6 +46,7 @@ const PostDetails = () => {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
     });
+    setPost(res.data);
   } catch (err) {
     console.error('Failed to refresh post', err);
   }
@@ -67,24 +71,27 @@ const PostDetails = () => {
   };
 
   const handleVote = async (type) => {
-    if (loading) return;
+  if (votingLoading) return;
 
-    setLoading(true);
-    try {
-      const endpoint = type === 'up' ? `http://localhost:5000/api/posts/${postId}/like` : `http://localhost:5000/api/posts/${postId}/dislike`;
-      const token = localStorage.getItem('token');
-      await axios.put(endpoint, {}, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      fetchPostAgain(); // refetch or update the post after vote
-    } catch (err) {
-      console.error('Failed to vote:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  setVotingLoading(true); // only affects the vote buttons
+  try {
+    const endpoint = type === 'up'
+      ? `http://localhost:5000/api/posts/${postId}/like`
+      : `http://localhost:5000/api/posts/${postId}/dislike`;
+
+    await axios.put(endpoint, {}, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+
+    fetchPostAgain(); // ✅ Just updates post, not the whole page
+  } catch (err) {
+    console.error('Failed to vote:', err);
+  } finally {
+    setVotingLoading(false);
+  }
+};
 
   if (loading) {
   return (
@@ -132,7 +139,7 @@ if (error) {
                   variant="ghost"
                   size="sm"
                   className={`p-1 h-8 w-8 hover:bg-orange-100`}
-                  disabled={loading}
+                  disabled={votingLoading}
                   onClick={() => handleVote('up')}
                 >
                   <ChevronUp className="w-4 h-4 text-orange-600" />
@@ -146,7 +153,7 @@ if (error) {
                   variant="ghost"
                   size="sm"
                   className={`p-1 h-8 w-8 hover:bg-blue-100`}
-                  disabled={loading}
+                  disabled={votingLoading}
                   onClick={() => handleVote('down')}
                 >
                   <ChevronDown className="w-4 h-4 text-blue-600" />
@@ -194,51 +201,39 @@ if (error) {
         </Card>
 
         {/* Comments Section */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              <MessageSquare className="w-5 h-5" />
-              {post.comments.length} {post.comments.length === 1 ? 'Comment' : 'Comments'}
-            </h2>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                placeholder="Write a comment..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                className="border px-3 py-2 rounded w-full"
-              />
-              <Button className="bg-green-600 hover:bg-green-700" onClick={handleAddComment}>
-                Add Comment
+        <div className="space-y-6">
+          <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2 mb-4">
+            <MessageSquare className="w-5 h-5" />
+            {post.comments.length} {post.comments.length === 1 ? 'Comment' : 'Comments'}
+          </h2>
+
+          {/* Main comment input */}
+          <div className="bg-white rounded-md p-4 shadow-sm mb-6">
+            <textarea
+              rows={3}
+              placeholder="Write your comment..."
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              className="w-full border border-gray-300 rounded p-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+            <div className="flex justify-end mt-2">
+              <Button
+                className="bg-green-600 hover:bg-green-700 text-white"
+                onClick={handleAddComment}
+              >
+                <SendHorizontal className="w-4 h-4 mr-2" />
+                Post Comment
               </Button>
             </div>
           </div>
-          
+
+          {/* Display each comment */}
           {post.comments.map((comment) => (
-            <Card key={comment._id} className="bg-white">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex flex-col items-center space-y-1">
-                    <Button variant="ghost" size="sm" className="p-1 h-6 w-6 hover:bg-orange-100">
-                      <ChevronUp className="w-3 h-3 text-orange-600" />
-                    </Button>
-                    <span className="text-xs font-medium text-gray-600">{comment.upvotes}</span>
-                    <Button variant="ghost" size="sm" className="p-1 h-6 w-6 hover:bg-blue-100">
-                      <ChevronDown className="w-3 h-3 text-blue-600" />
-                    </Button>
-                  </div>
-                  
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                      <span className="font-medium">{comment.author.username}</span>
-                      <span>•</span>
-                      <span>{timeAgo(comment.createdAt)}</span>
-                    </div>
-                    <p className="text-gray-700">{comment.content}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <CommentCard
+              key={comment._id}
+              comment={comment}
+              onReplySubmit={fetchPostAgain} // refresh post after reply
+            />
           ))}
         </div>
       </main>

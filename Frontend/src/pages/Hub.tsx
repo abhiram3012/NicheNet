@@ -42,8 +42,8 @@ interface Post {
     username: string;
   };
   hub: string;
-  upvotes: number;
-  downvotes: number;
+  upvotes: string[];
+  downvotes: string[];
   comments: string[];
   createdAt: string;
   updatedAt: string;
