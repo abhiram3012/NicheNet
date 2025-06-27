@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -56,88 +55,87 @@ const CreatePostForm = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!formData.title.trim() || !formData.content.trim()) {
-    toast({
-      title: "Error",
-      description: "Please fill in all required fields.",
-      variant: "destructive",
-    });
-    return;
-  }
-
-  setIsSubmitting(true);
-
-  try {
-    const token = localStorage.getItem("token");
-    const form = new FormData();
-
-    form.append("title", formData.title);
-    form.append("content", formData.content);
-    form.append("hubId", hubId);
-    form.append("isAnonymous", String(formData.isAnonymous)); // boolean -> string for FormData
-
-    if (formData.image) {
-      form.append("image", formData.image); // File object
+    if (!formData.title.trim() || !formData.content.trim()) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
     }
 
-    const response = await fetch("http://localhost:5000/api/posts/create", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: form,
-    });
+    setIsSubmitting(true);
 
-    const result = await response.json();
+    try {
+      const token = localStorage.getItem("token");
+      const form = new FormData();
 
-    if (!response.ok) {
-      throw new Error(result.message || "Failed to create post.");
+      form.append("title", formData.title);
+      form.append("content", formData.content);
+      form.append("hubId", hubId!);
+      form.append("isAnonymous", String(formData.isAnonymous));
+
+      if (formData.image) {
+        form.append("image", formData.image);
+      }
+
+      const response = await fetch("http://localhost:5000/api/posts/create", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: form,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to create post.");
+      }
+
+      toast({
+        title: "Success",
+        description: "Post created successfully!",
+      });
+
+      navigate(`/hub/${hubId}`);
+    } catch (error) {
+      console.error("Create post error:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create post.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    toast({
-      title: "Success",
-      description: "Post created successfully!",
-    });
-
-    navigate(`/hub/${hubId}`);
-  } catch (error) {
-    console.error("Create post error:", error);
-    toast({
-      title: "Error",
-      description: error.message || "Failed to create post.",
-      variant: "destructive",
-    });
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-        <Navbar />
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Navbar />
+      <div className="max-w-2xl mx-auto px-4 py-6">
         <div className="mb-6">
           <Button
             variant="ghost"
             onClick={() => navigate(`/hub/${hubId}`)}
-            className="mb-4"
+            className="mb-4 dark:text-gray-200 dark:hover:bg-gray-800"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Hub
           </Button>
         </div>
 
-        <Card>
+        <Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold">Create New Post</CardTitle>
+            <CardTitle className="text-2xl font-bold dark:text-white">Create New Post</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="title">Title *</Label>
+                <Label htmlFor="title" className="dark:text-gray-300">Title *</Label>
                 <Input
                   id="title"
                   name="title"
@@ -145,12 +143,12 @@ const CreatePostForm = () => {
                   onChange={handleInputChange}
                   placeholder="Enter post title..."
                   required
-                  className="w-full"
+                  className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="content">Content *</Label>
+                <Label htmlFor="content" className="dark:text-gray-300">Content *</Label>
                 <Textarea
                   id="content"
                   name="content"
@@ -158,12 +156,12 @@ const CreatePostForm = () => {
                   onChange={handleInputChange}
                   placeholder="Write your post content here..."
                   required
-                  className="min-h-[200px] w-full resize-none"
+                  className="min-h-[200px] w-full resize-none dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="image">Image (Optional)</Label>
+                <Label htmlFor="image" className="dark:text-gray-300">Image (Optional)</Label>
                 <div className="flex flex-col space-y-4">
                   <div className="flex items-center space-x-2">
                     <Input
@@ -177,7 +175,7 @@ const CreatePostForm = () => {
                       type="button"
                       variant="outline"
                       onClick={() => document.getElementById('image')?.click()}
-                      className="w-full sm:w-auto"
+                      className="w-full sm:w-auto dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
                     >
                       <Upload className="w-4 h-4 mr-2" />
                       Upload Image
@@ -189,7 +187,7 @@ const CreatePostForm = () => {
                       <img
                         src={imagePreview}
                         alt="Preview"
-                        className="max-w-full h-48 object-cover rounded-lg border"
+                        className="max-w-full h-48 object-cover rounded-lg border dark:border-gray-600"
                       />
                       <Button
                         type="button"
@@ -214,7 +212,7 @@ const CreatePostForm = () => {
                   checked={formData.isAnonymous}
                   onCheckedChange={handleAnonymousToggle}
                 />
-                <Label htmlFor="anonymous" className="text-sm font-medium">
+                <Label htmlFor="anonymous" className="text-sm font-medium dark:text-gray-300">
                   Post anonymously
                 </Label>
               </div>
@@ -224,14 +222,14 @@ const CreatePostForm = () => {
                   type="button"
                   variant="outline"
                   onClick={() => navigate(`/hub/${hubId}`)}
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
                   disabled={isSubmitting}
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? 'Creating...' : 'Create Post'}

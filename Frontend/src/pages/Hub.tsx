@@ -22,7 +22,7 @@ interface Hub {
   name: string;
   description: string;
   creator: string;
-  memberCount: number; // <- change from members: string[] to this
+  memberCount: number;
   bannerUrl?: string;
   moderators?: string[];
   rules?: string[];
@@ -50,7 +50,7 @@ interface Post {
 }
 
 const getCurrentUserId = (): string | null => {
-  const token = localStorage.getItem("token"); // stored token string
+  const token = localStorage.getItem("token");
   const decoded = token ? decodeJWT(token) : null;
   const currentUserId = decoded?._id || decoded?.id;
   return currentUserId || null;
@@ -183,11 +183,11 @@ const Hub = () => {
     fetchQuestions();
   }, [hubId]);
 
-  if (loading || !hubData) return <div className="p-10 text-center text-gray-600">Loading Hub...</div>;
+  if (loading || !hubData) return <div className="p-10 text-center text-gray-600 dark:text-gray-400">Loading Hub...</div>;
 
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 py-6">
@@ -197,11 +197,31 @@ const Hub = () => {
           {/* Main Content */}
           <div className="lg:col-span-3">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-6">
-                <TabsTrigger value="posts">Posts</TabsTrigger>
-                <TabsTrigger value="polls">Polls</TabsTrigger>
-                <TabsTrigger value="questions">Questions</TabsTrigger>
-                <TabsTrigger value="my-activity">My Activity</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-4 mb-6 bg-gray-100 dark:bg-gray-800">
+                <TabsTrigger 
+                  value="posts"
+                  className="data-[state=active]:bg-white data-[state=active]:text-blue-600 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400"
+                >
+                  Posts
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="polls"
+                  className="data-[state=active]:bg-white data-[state=active]:text-blue-600 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400"
+                >
+                  Polls
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="questions"
+                  className="data-[state=active]:bg-white data-[state=active]:text-blue-600 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400"
+                >
+                  Questions
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="my-activity"
+                  className="data-[state=active]:bg-white data-[state=active]:text-blue-600 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400"
+                >
+                  My Activity
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="posts" className="space-y-4">
@@ -221,7 +241,7 @@ const Hub = () => {
               <TabsContent value="polls" className="space-y-4">
                 <div className="mb-4">
                   <Link to={`/hub/${hubId}/create-poll`}>
-                    <Button className="bg-blue-600 hover:bg-blue-700">
+                    <Button className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600">
                       <BarChart3 className="w-4 h-4 mr-2" />
                       Create New Poll
                     </Button>
@@ -236,21 +256,23 @@ const Hub = () => {
                   />
                 ) : (
                 polls.map((poll) => (
-                  <Card key={poll.pollId} className="bg-white">
+                  <Card key={poll.pollId} className="bg-white dark:bg-gray-800 border dark:border-gray-700">
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <div>
-                          <CardTitle className="text-lg">{poll.title}</CardTitle>
-                          <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                          <CardTitle className="text-lg dark:text-white">{poll.title}</CardTitle>
+                          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
                             <span>by {poll.author}</span>
                             {poll.isCreator && (
-                              <Badge className="bg-yellow-100 text-yellow-800 text-xs">Creator</Badge>
+                              <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 text-xs">
+                                Creator
+                              </Badge>
                             )}
                             <span>•</span>
                             <span>{timeAgo(poll.createdAt)}</span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                           <BarChart3 className="w-4 h-4" />
                           {poll.totalVotes} votes
                         </div>
@@ -263,20 +285,24 @@ const Hub = () => {
                             <div className="flex items-center justify-between">
                               <Button
                                 variant={poll.hasVoted && poll.userVote === option.text ? "default" : "outline"}
-                                className="flex-1 justify-start"
+                                className={`flex-1 justify-start ${
+                                  poll.hasVoted && poll.userVote === option.text 
+                                    ? "dark:bg-blue-700 dark:hover:bg-blue-600" 
+                                    : "dark:border-gray-600 dark:hover:bg-gray-700"
+                                }`}
                                 onClick={() => handleVote(poll.pollId, option.text)}
                                 disabled={poll.hasVoted}
                               >
                                 {option.text}
                               </Button>
-                              <span className="text-sm text-gray-500 ml-3">
+                              <span className="text-sm text-gray-500 dark:text-gray-400 ml-3">
                                 {option.percentage}%
                               </span>
                             </div>
                             {poll.hasVoted && (
-                              <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                                 <div 
-                                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                  className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-300"
                                   style={{ width: `${option.percentage}%` }}
                                 ></div>
                               </div>
@@ -292,7 +318,7 @@ const Hub = () => {
               <TabsContent value="questions" className="space-y-4">
                 <div className="mb-4">
                    <AskQuestionDialog>
-                    <Button className="bg-purple-600 hover:bg-purple-700">
+                    <Button className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600">
                       <HelpCircle className="w-4 h-4 mr-2" />
                       Ask a Question
                     </Button>
@@ -323,18 +349,20 @@ const Hub = () => {
                     
                     {/* User's Polls */}
                     {userPolls.map((poll) => (
-                      <Card key={`poll-${poll.id}`} className="bg-white">
+                      <Card key={`poll-${poll.id}`} className="bg-white dark:bg-gray-800 border dark:border-gray-700">
                         <CardHeader>
                           <div className="flex items-center justify-between">
                             <div>
-                              <CardTitle className="text-lg">{poll.title}</CardTitle>
-                              <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                                <Badge className="bg-blue-100 text-blue-800 text-xs">Poll</Badge>
+                              <CardTitle className="text-lg dark:text-white">{poll.title}</CardTitle>
+                              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-xs">
+                                  Poll
+                                </Badge>
                                 <span>•</span>
                                 <span>{poll.timePosted}</span>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                               <BarChart3 className="w-4 h-4" />
                               {poll.totalVotes} votes
                             </div>
@@ -345,36 +373,38 @@ const Hub = () => {
                     
                     {/* User's Questions */}
                     {userQuestions.map((question) => (
-                      <Card key={`question-${question.id}`} className="bg-white">
+                      <Card key={`question-${question.id}`} className="bg-white dark:bg-gray-800 border dark:border-gray-700">
                         <CardHeader>
                           <div className="flex items-center justify-between">
                             <div>
-                              <CardTitle className="text-lg">{question.title}</CardTitle>
-                              <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                                <Badge className="bg-purple-100 text-purple-800 text-xs">Question</Badge>
+                              <CardTitle className="text-lg dark:text-white">{question.title}</CardTitle>
+                              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 text-xs">
+                                  Question
+                                </Badge>
                                 <span>•</span>
                                 <span>{question.timePosted}</span>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                               <MessageSquare className="w-4 h-4" />
                               {question.answersCount} answers
                             </div>
                           </div>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-gray-600">{question.content}</p>
+                          <p className="text-gray-600 dark:text-gray-300">{question.content}</p>
                         </CardContent>
                       </Card>
                     ))}
                   </div>
                 ) : (
-                  <Card className="bg-white">
+                  <Card className="bg-white dark:bg-gray-800 border dark:border-gray-700">
                     <CardContent className="p-8 text-center">
-                      <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-600 mb-2">No activity yet</h3>
-                      <p className="text-gray-500 mb-4">You haven't created any posts, polls, or questions in this hub yet.</p>
-                      <Button className="bg-green-600 hover:bg-green-700">
+                      <Users className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-600 dark:text-gray-300 mb-2">No activity yet</h3>
+                      <p className="text-gray-500 dark:text-gray-400 mb-4">You haven't created any posts, polls, or questions in this hub yet.</p>
+                      <Button className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600">
                         Start Contributing
                       </Button>
                     </CardContent>

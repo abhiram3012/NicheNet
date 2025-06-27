@@ -116,13 +116,13 @@ if (error) {
 }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
       
       <main className="max-w-4xl mx-auto px-4 py-6">
         <div className="mb-6">
           <Link to={`/hub/${hubId}`}>
-            <Button variant="outline" className="mb-4">
+            <Button variant="outline" className="mb-4 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Hub
             </Button>
@@ -130,7 +130,11 @@ if (error) {
         </div>
 
         {/* Post Card */}
-        <Card className={`bg-white mb-6 ${post.isCreator ? 'ring-2 ring-yellow-200 border-yellow-300' : ''}`}>
+        <Card className={`bg-white dark:bg-gray-800 mb-6 ${
+          post.isCreator 
+            ? 'ring-2 ring-yellow-200 dark:ring-yellow-500/60 border-yellow-300 dark:border-yellow-500/50' 
+            : ''
+        }`}>
           <CardContent className="p-6">
             <div className="flex gap-4">
               {/* Voting Section */}
@@ -138,37 +142,41 @@ if (error) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className={`p-1 h-8 w-8 hover:bg-orange-100`}
+                  className="p-1 h-8 w-8 hover:bg-orange-100 dark:hover:bg-orange-900/30"
                   disabled={votingLoading}
                   onClick={() => handleVote('up')}
                 >
-                  <ChevronUp className="w-4 h-4 text-orange-600" />
+                  <ChevronUp className="w-4 h-4 text-orange-600 dark:text-orange-400" />
                 </Button>
 
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {post.upvotes.length - post.downvotes.length}
                 </span>
 
                 <Button
                   variant="ghost"
                   size="sm"
-                  className={`p-1 h-8 w-8 hover:bg-blue-100`}
+                  className="p-1 h-8 w-8 hover:bg-blue-100 dark:hover:bg-blue-900/30"
                   disabled={votingLoading}
                   onClick={() => handleVote('down')}
                 >
-                  <ChevronDown className="w-4 h-4 text-blue-600" />
+                  <ChevronDown className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 </Button>
               </div>
 
               {/* Post Content */}
               <div className="flex-1">
-                <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-2">
                   <div className="flex items-center gap-2">
-                    <span className={`font-medium ${post.isCreator ? 'text-yellow-700' : ''}`}>
+                    <span className={`font-medium ${
+                      post.isCreator 
+                        ? 'text-yellow-700 dark:text-yellow-400' 
+                        : 'dark:text-gray-200'
+                    }`}>
                       {post.isAnonymous ? 'Anonymous' : post.author.username}
                     </span>
                     {post.isCreator && (
-                      <Badge className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 flex items-center gap-1">
+                      <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 text-xs px-2 py-1 flex items-center gap-1">
                         <Crown className="w-3 h-3" />
                         Creator
                       </Badge>
@@ -178,11 +186,11 @@ if (error) {
                   <span>{timeAgo(post.createdAt)}</span>
                 </div>
 
-                <h1 className="text-2xl font-semibold text-gray-800 mb-4">
+                <h1 className="text-2xl font-semibold text-gray-800 dark:text-white mb-4">
                   {post.title}
                 </h1>
 
-                <p className="text-gray-700 mb-4">
+                <p className="text-gray-700 dark:text-gray-300 mb-4">
                   {post.content}
                 </p>
 
@@ -202,23 +210,23 @@ if (error) {
 
         {/* Comments Section */}
         <div className="space-y-6">
-          <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2 mb-4">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2 mb-4">
             <MessageSquare className="w-5 h-5" />
             {post.comments.length} {post.comments.length === 1 ? 'Comment' : 'Comments'}
           </h2>
 
           {/* Main comment input */}
-          <div className="bg-white rounded-md p-4 shadow-sm mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-md p-4 shadow-sm mb-6 border border-gray-300 dark:border-gray-700">
             <textarea
               rows={3}
               placeholder="Write your comment..."
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              className="w-full border border-gray-300 rounded p-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             />
             <div className="flex justify-end mt-2">
               <Button
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white"
                 onClick={handleAddComment}
               >
                 <SendHorizontal className="w-4 h-4 mr-2" />
@@ -233,7 +241,7 @@ if (error) {
               postId={postId}
               key={comment._id}
               comment={comment}
-              onReplySubmit={fetchPostAgain} // refresh post after reply
+              onReplySubmit={fetchPostAgain}
             />
           ))}
         </div>

@@ -26,8 +26,7 @@ interface Post {
 
 interface PostCardProps {
   post: Post;
-  hubCreatorId?: boolean; // Optional for showing "Creator" badge
-  currentUserId?: string; // Optional if you want to check if current user is creator
+  hubCreatorId?: boolean;
 }
 
 const PostCard: React.FC<PostCardProps> = ({ post, hubCreatorId }) => {
@@ -48,27 +47,25 @@ const PostCard: React.FC<PostCardProps> = ({ post, hubCreatorId }) => {
     createdAt,
   } = post;
 
-  const postId = _id; // Assuming _id is the post ID
-
-  const isCreator = hubCreatorId ;
-
-  const timePosted = new Date(createdAt).toLocaleString(); // You can format this better using dayjs or date-fns
+  const postId = _id;
+  const isCreator = hubCreatorId;
+  const timePosted = new Date(createdAt).toLocaleString();
 
   const fetchPostAgain = async () => {
-  try {
-    const res = await axios.get(`http://localhost:5000/api/posts/${postId}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    });
-    setPostData(res.data);
-    setNetVotes(res.data.upvotes.length - res.data.downvotes.length);
-  } catch (err) {
-    console.error('Failed to refresh post', err);
-  }
-};
+    try {
+      const res = await axios.get(`http://localhost:5000/api/posts/${postId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      setPostData(res.data);
+      setNetVotes(res.data.upvotes.length - res.data.downvotes.length);
+    } catch (err) {
+      console.error('Failed to refresh post', err);
+    }
+  };
 
-const handleVote = async (type) => {
+  const handleVote = async (type) => {
     if (loading) return;
 
     setLoading(true);
@@ -80,7 +77,7 @@ const handleVote = async (type) => {
           'Authorization': `Bearer ${token}`
         }
       });
-      fetchPostAgain(); // refetch or update the post after vote
+      fetchPostAgain();
     } catch (err) {
       console.error('Failed to vote:', err);
     } finally {
@@ -90,8 +87,8 @@ const handleVote = async (type) => {
 
   return (
     <Card
-      className={`bg-white hover:shadow-md transition-shadow ${
-        isCreator ? 'ring-2 ring-yellow-200 border-yellow-300' : ''
+      className={`bg-white dark:bg-gray-800 hover:shadow-md transition-shadow border dark:border-gray-700 ${
+        isCreator ? 'ring-2 ring-yellow-200 dark:ring-yellow-500/60 border-yellow-300 dark:border-yellow-500/50' : ''
       }`}
     >
       <CardContent className="p-6">
@@ -101,36 +98,40 @@ const handleVote = async (type) => {
             <Button
               variant="ghost"
               size="sm"
-              className={`p-1 h-8 w-8 hover:bg-orange-100`}
+              className="p-1 h-8 w-8 hover:bg-orange-100 dark:hover:bg-orange-900/30"
               disabled={loading}
               onClick={() => handleVote('up')}
             >
-              <ChevronUp className="w-4 h-4 text-orange-600 " />
+              <ChevronUp className="w-4 h-4 text-orange-600 dark:text-orange-400" />
             </Button>
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               {netVotes}
             </span>
             <Button
               variant="ghost"
               size="sm"
-              className={`p-1 h-8 w-8 hover:bg-blue-100`}
+              className="p-1 h-8 w-8 hover:bg-blue-100 dark:hover:bg-blue-900/30"
               disabled={loading}
               onClick={() => handleVote('down')}
             >
-              <ChevronDown className="w-4 h-4 text-blue-600" />
+              <ChevronDown className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             </Button>
           </div>
 
           {/* Post Content */}
           <div className="flex-1">
             {/* Author & Timestamp */}
-            <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-2">
               <div className="flex items-center gap-2">
-                <span className={`font-medium ${isCreator ? 'text-yellow-700' : ''}`}>
+                <span className={`font-medium ${
+                  isCreator 
+                    ? 'text-yellow-700 dark:text-yellow-400' 
+                    : 'dark:text-gray-200'
+                }`}>
                   {isAnonymous ? 'Anonymous' : author.username}
                 </span>
                 {isCreator && (
-                  <Badge className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 flex items-center gap-1">
+                  <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 text-xs px-2 py-1 flex items-center gap-1">
                     <Crown className="w-3 h-3" />
                     Creator
                   </Badge>
@@ -142,13 +143,15 @@ const handleVote = async (type) => {
 
             {/* Title */}
             <Link to={`/hub/${hubId}/post/${_id}`}>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2 hover:text-blue-600 cursor-pointer">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer">
                 {title}
               </h3>
             </Link>
 
             {/* Content */}
-            <p className="text-gray-600 mb-3 line-clamp-3">{content}</p>
+            <p className="text-gray-600 dark:text-gray-300 mb-3 line-clamp-3">
+              {content}
+            </p>
 
             {/* Image */}
             {image && (
@@ -163,12 +166,20 @@ const handleVote = async (type) => {
 
             {/* Post Actions */}
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" className="flex items-center gap-2 text-gray-500 hover:text-gray-700">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="flex items-center gap-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+              >
                 <MessageSquare className="w-4 h-4" />
                 <span>{comments.length} comments</span>
               </Button>
 
-              <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+              >
                 Share
               </Button>
             </div>
