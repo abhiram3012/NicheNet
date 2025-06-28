@@ -1,43 +1,67 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, Clock } from 'lucide-react';
+import { Megaphone, ShieldCheck, Link as LinkIcon } from 'lucide-react';
+
+interface Announcement {
+  _id: string;
+  content: string;
+  author: {id: string, username: string };
+  createdAt: string;
+}
+
+interface Hub {
+  name: string;
+  description: string;
+  bannerUrl?: string;
+  moderators?: string[];
+  rules?: string[];
+  announcements?: Announcement[];
+  discordLink?: string;
+  topContributors?: { username: string; posts: number }[];
+  isCreator?: boolean;
+  isJoined?: boolean;
+}
 
 interface HubSidebarProps {
-  hubData: {
-    moderators: string[];
-    rules: string[];
-    topContributors: Array<{
-      username: string;
-      posts: number;
-    }>;
-  };
+  hubData: Hub;
 }
 
 const HubSidebar: React.FC<HubSidebarProps> = ({ hubData }) => {
-  const { moderators, rules, topContributors } = hubData;
+  const { announcements = [], rules = [], discordLink } = hubData;
 
   return (
     <div className="space-y-6">
-      {/* Moderators */}
+      {/* Announcements */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            Hub Moderators
+            <Megaphone className="w-5 h-5" />
+            Announcements
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            {moderators.map((moderator, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <span className="text-sm text-gray-700">{moderator}</span>
-                <Badge variant="secondary" className="text-xs">
-                  Mod
-                </Badge>
-              </div>
-            ))}
+          <div className="space-y-3">
+            {announcements.length > 0 ? (
+              announcements.map((announcement) => (
+                <div
+                  key={announcement._id}
+                  className="bg-gray-50 p-3 rounded-md dark:bg-gray-700/50"
+                >
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    {announcement.content}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    By {announcement.author.username} •{' '}
+                    {new Date(announcement.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                No announcements yet.
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -45,63 +69,50 @@ const HubSidebar: React.FC<HubSidebarProps> = ({ hubData }) => {
       {/* Rules */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Community Rules</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {rules.map((rule, index) => (
-              <div key={index} className="flex gap-2">
-                <span className="text-sm font-medium text-blue-600 min-w-[20px]">
-                  {index + 1}.
-                </span>
-                <span className="text-sm text-gray-700">{rule}</span>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Top Contributors */}
-      <Card>
-        <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <Clock className="w-5 h-5" />
-            Top Contributors This Week
+            <ShieldCheck className="w-5 h-5" />
+            Community Rules
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {topContributors.map((contributor, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-600">
-                    #{index + 1}
+            {rules.length > 0 ? (
+              rules.map((rule, index) => (
+                <div key={index} className="flex gap-2">
+                  <span className="text-sm font-medium text-blue-600 min-w-[20px]">
+                    {index + 1}.
                   </span>
-                  <span className="text-sm text-gray-700">
-                    {contributor.username}
-                  </span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{rule}</span>
                 </div>
-                <Badge variant="outline" className="text-xs">
-                  {contributor.posts} posts
-                </Badge>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-sm text-gray-500 dark:text-gray-400">No rules set.</p>
+            )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Active Now */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Active Now</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-sm text-gray-700">89 members online</span>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Discord Link */}
+      {discordLink && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <LinkIcon className="w-5 h-5" />
+              Discord Server
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <a
+              href={discordLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block w-full text-center bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Join on Discord
+            </a>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

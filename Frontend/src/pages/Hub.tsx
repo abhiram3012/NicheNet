@@ -17,6 +17,13 @@ import AskQuestionDialog from '@/components/AskQuestionDialog';
 import { timeAgo } from '@/utils/timeAgo';
 import { useNavigate } from 'react-router-dom';
 
+interface Announcement {
+  _id: string;
+  content: string;
+  author: {id: string, username: string };
+  createdAt: string;
+}
+
 interface Hub {
   id: string;
   name: string;
@@ -26,6 +33,8 @@ interface Hub {
   bannerUrl?: string;
   moderators?: string[];
   rules?: string[];
+  announcements?: Announcement[]; // ✅ new
+  discord?: string;        // ✅ new
   topContributors?: { username: string; posts: number }[];
   isCreator?: boolean;
   isJoined?: boolean;
@@ -85,7 +94,6 @@ const Hub = () => {
       });
       const questionsData = await questionsRes.json();
       setQuestions(questionsData);
-      console.log('Fetched hub questions:', questionsData);
     };
 
     if (hubData) fetchExtraData();
@@ -99,9 +107,11 @@ useEffect(() => {
       });
       const data = await res.json();
       const currentUserId = getCurrentUserId();
+      console.log('Hub data:', data);
 
       // Check and redirect before setting state
-      if (data.isPrivate && data.status !== 'not_joined') {
+      if (data.isPrivate && data.status !== 'joined') {
+        console.log('Redirecting to join request page');
         navigate(`/hub/${hubId}/join-request`);
         return;
       }
@@ -170,7 +180,6 @@ useEffect(() => {
       setUserPosts(postsData);
       setUserPolls(pollsData);
       setUserQuestions(questionsData);
-      console.log('user questions', questionsData);
     };
 
     fetchMyActivity();
@@ -439,9 +448,11 @@ useEffect(() => {
           </div>
 
           {/* Sidebar */}
-          {/* <div className="lg:col-span-1">
-            <HubSidebar hubData={hubData} />
-          </div> */}
+          <div className="lg:col-span-1">
+          <HubSidebar 
+            hubData={hubData}
+          />
+        </div>
         </div>
       </main>
     </div>

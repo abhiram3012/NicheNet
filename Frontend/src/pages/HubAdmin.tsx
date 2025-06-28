@@ -25,6 +25,10 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { timeAgo } from '@/utils/timeAgo';
+import CreateAnnouncementModal from '@/components/CreateAnnouncementModal';
+import EditHubModal from '@/components/EditHubModal';
+import EditRulesModal from '@/components/EditRulesModal';
 
 const HubAdmin = () => {
   const { hubId } = useParams();
@@ -35,6 +39,72 @@ const HubAdmin = () => {
   const [members, setMembers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activities, setActivities] = useState(null);
+  const [inviteLink, setInviteLink] = useState('');
+  const [confirmingUserId, setConfirmingUserId] = useState(null);
+  const [announcementModalOpen, setAnnouncementModalOpen] = useState(false);
+  const [editModalOpenOverview, setEditModalOpenOverview] = useState(false);
+  const [editModalOpenSettings, setEditModalOpenSettings] = useState(false);
+  const [rulesModalOpen, setRulesModalOpen] = useState(false);
+
+  const handleUpdateRules = async (data) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.put(`http://localhost:5000/api/hubs/${hubId}/rules`, 
+        data,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setHubData(res.data);
+      toast({ title: 'Rules Updated', description: 'Hub rules updated successfully.' });
+    } catch (err) {
+      toast({ title: 'Error', description: 'Failed to update rules.' });
+    }
+  };
+
+  const handleEditHubInfo = async (data) => {
+  try {
+    const token = localStorage.getItem('token');
+    const res = await axios.put(`http://localhost:5000/api/hubs/${hubId}/info`, 
+      data,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    setHubData(res.data);
+    toast({ title: 'Hub Updated', description: 'Hub information updated successfully.' });
+  } catch (err) {
+    toast({ title: 'Error', description: 'Failed to update hub.' });
+  }
+};
+
+  const handleCreateAnnouncement = async (content) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`http://localhost:5000/api/hubs/${hubId}/announcements`, 
+        { content },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast({ title: 'Announcement Created', description: 'Your announcement has been posted.' });
+    } catch (err) {
+      console.error('Failed to create announcement:', err);
+      toast({ title: 'Error', description: 'Failed to create announcement.' });
+    }
+  };
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/hubs/${hubId}/recent-activities`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }})
+        const data = await res.json();
+        setActivities(data);
+      } catch (err) {
+        console.error('Failed to fetch activities', err);
+      }
+    };
+
+    fetchActivities();
+  }, [hubId]);
 
   useEffect(() => {
     const fetchAdminData = async () => {
@@ -66,6 +136,30 @@ const HubAdmin = () => {
 
     fetchAdminData();
   }, [hubId]);
+
+  const handleRemoveUser = async (userId) => {
+  try {
+    const token = localStorage.getItem('token');
+    await axios.delete(`http://localhost:5000/api/hubs/${hubId}/remove-member/${userId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    // Remove from local state
+    setMembers(prev => prev.filter(member => member._id !== userId));
+    toast({
+      title: "User Removed",
+      description: "Member has been permanently removed from this hub.",
+    });
+  } catch (err) {
+    console.error("Failed to remove user:", err);
+    toast({
+      title: "Error",
+      description: "Failed to remove user from hub.",
+    });
+  } finally {
+    setConfirmingUserId(null);
+  }
+};
 
   const stats = [
     { label: 'Total Members', value: hubData?.totalMembers || 0, icon: Users, color: 'blue' },
@@ -162,7 +256,7 @@ const HubAdmin = () => {
               {hubData ? (
                 <>
                   <h2 className="text-xl text-gray-600 dark:text-gray-300">{hubData.name}</h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Created on {hubData.createdAt}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Created {timeAgo(hubData.createdAt)}</p>
                 </>
               ) : (
                 <div className="space-y-2">
@@ -178,10 +272,6 @@ const HubAdmin = () => {
                   View Hub
                 </Button>
               </Link>
-              <Button variant="outline" className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800">
-                <Edit className="w-4 h-4 mr-2" />
-                Edit Hub
-              </Button>
             </div>
           </div>
         </div>
@@ -258,18 +348,26 @@ const HubAdmin = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between py-2 border-b dark:border-gray-700">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">New member joined</span>
-                      <span className="text-xs text-gray-400 dark:text-gray-500">2h ago</span>
-                    </div>
-                    <div className="flex items-center justify-between py-2 border-b dark:border-gray-700">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Post reported</span>
-                      <span className="text-xs text-gray-400 dark:text-gray-500">4h ago</span>
-                    </div>
-                    <div className="flex items-center justify-between py-2">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">10 new posts created</span>
-                      <span className="text-xs text-gray-400 dark:text-gray-500">1d ago</span>
-                    </div>
+                    {activities?.posts?.map((post, index) => (
+                      <div key={`post-${index}`} className="flex items-center justify-between py-2 border-b dark:border-gray-700">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">New post: {post.title}</span>
+                        <span className="text-xs text-gray-400 dark:text-gray-500">{new Date(post.createdAt).toLocaleTimeString()}</span>
+                      </div>
+                    ))}
+
+                    {activities?.polls?.map((poll, index) => (
+                      <div key={`poll-${index}`} className="flex items-center justify-between py-2 border-b dark:border-gray-700">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Poll created: {poll.question}</span>
+                        <span className="text-xs text-gray-400 dark:text-gray-500">{new Date(poll.createdAt).toLocaleTimeString()}</span>
+                      </div>
+                    ))}
+
+                    {activities?.questions?.map((question, index) => (
+                      <div key={`question-${index}`} className="flex items-center justify-between py-2">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Question asked: {question.text}</span>
+                        <span className="text-xs text-gray-400 dark:text-gray-500">{new Date(question.createdAt).toLocaleTimeString()}</span>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
@@ -279,15 +377,55 @@ const HubAdmin = () => {
                   <CardTitle className="dark:text-white">Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button variant="outline" className="w-full justify-start dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                  <Button 
+                    onClick={() => {
+                      const link = `${window.location.origin}/hub/${hubId}`;
+                      setInviteLink(link);
+                      toast({
+                        title: "Invite link generated",
+                        description: "Share this link with users to invite them.",
+                      });
+                    }}
+                    variant="outline" 
+                    className="w-full justify-start dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+                  >
                     <UserPlus className="w-4 h-4 mr-2" />
                     Invite Members
                   </Button>
-                  <Button variant="outline" className="w-full justify-start dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+
+                  {inviteLink && (
+                    <div className="mt-3 p-3 rounded border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/30 flex items-center justify-between">
+                      <span className="text-sm text-gray-700 dark:text-gray-200 break-all">{inviteLink}</span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          navigator.clipboard.writeText(inviteLink);
+                          toast({
+                            title: "Copied",
+                            description: "Invite link copied to clipboard",
+                          });
+                        }}
+                        className="ml-2 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+                      >
+                        Copy
+                      </Button>
+                    </div>
+                  )}
+                  <Button 
+                    onClick={() => setAnnouncementModalOpen(true)}
+                    variant="outline" 
+                    className="w-full justify-start dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+                  >
                     <MessageSquare className="w-4 h-4 mr-2" />
                     Create Announcement
                   </Button>
-                  <Button variant="outline" className="w-full justify-start dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                  <CreateAnnouncementModal
+                    open={announcementModalOpen}
+                    setOpen={setAnnouncementModalOpen}
+                    onSubmit={handleCreateAnnouncement}
+                  />
+                  <Button onClick={()=>{setActiveTab("settings")}} variant="outline" className="w-full justify-start dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
                     <Settings className="w-4 h-4 mr-2" />
                     Hub Settings
                   </Button>
@@ -386,10 +524,35 @@ const HubAdmin = () => {
                         <span className="font-medium dark:text-white">{member.username}</span>
                       </div>
                       <div className="flex gap-2">
-                        <Badge variant="default" className="dark:bg-green-700">Active</Badge>
-                        <Button size="sm" variant="outline" className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
-                          <Ban className="w-4 h-4" />
-                        </Button>
+                        {confirmingUserId === member._id ? (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/20"
+                              onClick={() => handleRemoveUser(member._id)}
+                            >
+                              Confirm Remove
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+                              onClick={() => setConfirmingUserId(null)}
+                            >
+                              Cancel
+                            </Button>
+                          </>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+                            onClick={() => setConfirmingUserId(member._id)}
+                          >
+                            Remove User <Ban className="w-4 h-4 ml-1" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -419,19 +582,34 @@ const HubAdmin = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button 
-                  variant="outline" 
-                  className="w-full justify-start dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
-                >
+                variant='outline'
+                className="w-full justify-start dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700" 
+                onClick={() => setEditModalOpenSettings(true)} disabled={!hubData}>
                   <Edit className="w-4 h-4 mr-2" />
-                  Edit Hub Information
+                  Edit Hub
                 </Button>
+
+                <EditHubModal
+                  open={editModalOpenSettings}
+                  setOpen={setEditModalOpenSettings}
+                  hubData={hubData}
+                  onSubmit={handleEditHubInfo}
+                />
                 <Button 
-                  variant="outline" 
+                  variant="outline"
+                  onClick={() => setRulesModalOpen(true)}
                   className="w-full justify-start dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
                 >
                   <Shield className="w-4 h-4 mr-2" />
-                  Privacy Settings
+                  Edit Hub Rules
                 </Button>
+
+                <EditRulesModal
+                  open={rulesModalOpen}
+                  setOpen={setRulesModalOpen}
+                  hubData={hubData}
+                  onSubmit={handleUpdateRules}
+                />
                 <Button 
                   variant="outline" 
                   className="w-full justify-start text-red-600 hover:text-red-700 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/20"

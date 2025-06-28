@@ -1,6 +1,9 @@
 const User = require('../models/User');
 const Post = require('../models/Post'); // assuming Post model exists
 const Hub = require('../models/hub');
+const Poll = require('../models/Poll'); // Assuming exists
+const Question = require('../models/Question'); // Assuming exists
+const Announcement = require('../models/Announcement'); // Assuming exists
 
 // Create new hub
 const createHub = async (req, res) => {
@@ -56,7 +59,13 @@ const getHubById = async (req, res) => {
   try {
     const hub = await Hub.findById(req.params.hubId)
       .populate('members', 'username')
+      .populate({
+        path: 'announcements',
+        populate: { path: 'author', select: 'username' }, // optional: include author username
+        select: 'content createdAt author',               // fields you want
+      })
       .select('-__v');
+
     if (!hub) return res.status(404).json({ error: 'Hub not found' });
 
     let status = 'not_joined';
@@ -296,6 +305,185 @@ const updateHubBanner = async (req, res) => {
   }
 };
 
+const getRecentActivities = async (req, res) => {
+  try {
+    const hubId = req.params.hubId;
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000); // last 24 hours
+
+    // Posts created
+    const recentPosts = await Post.find({ hub: hubId, createdAt: { $gte: since } }).populate('author', 'username');
+
+    // Polls created
+    const recentPolls = await Poll.find({ hub: hubId, createdAt: { $gte: since } }).populate('author', 'username');
+
+    // Questions asked
+    const recentQuestions = await Question.find({ hub: hubId, createdAt: { $gte: since } }).populate('author', 'username');
+
+    res.json({
+      posts: recentPosts.map(p => ({ title: p.title, createdAt: p.createdAt, author: p.author.username })),
+      polls: recentPolls.map(p => ({ question: p.title, createdAt: p.createdAt, creator: p.author.username })),
+      questions: recentQuestions.map(q => ({ text: q.title, createdAt: q.createdAt, author: q.author.username })),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch recent activities' });
+  }
+};
+
+// In your hub controller
+const removeMember = async (req, res) => {
+  try {
+    const { hubId, userId } = req.params;
+    const adminId = req.user.id;
+
+    const hub = await Hub.findById(hubId);
+    if (!hub) return res.status(404).json({ error: 'Hub not found' });
+
+    if (!hub.admins.map(id => id.toString()).includes(adminId)) {
+      return res.status(403).json({ error: 'Only admins can remove members' });
+    }
+
+    // Prevent self-removal
+    if (userId === adminId) {
+      return res.status(400).json({ error: 'Admins cannot remove themselves from the hub' });
+    }
+
+    // Remove user
+    hub.members = hub.members.filter(id => id.toString() !== userId);
+    await hub.save();
+
+    await User.findByIdAndUpdate(userId, { $pull: { joinedHubs: hub._id } });
+
+    res.json({ message: 'User removed from hub' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to remove member' });
+  }
+};
+
+const getSidebarInfo = async (req, res) => {
+  try {
+    const { hubId } = req.params;
+    const hub = await Hub.findById(hubId).select('announcements rules discordLink');
+
+    if (!hub) return res.status(404).json({ error: 'Hub not found' });
+
+    res.json({
+      announcements: hub.announcements || [],
+      rules: hub.rules || [],
+      discordLink: hub.discordLink || '',
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch sidebar info' });
+  }
+};
+
+const updateSidebarInfo = async (req, res) => {
+  try {
+    const { hubId } = req.params;
+    const { announcements, rules, discordLink } = req.body;
+    const userId = req.user.id;
+
+    const hub = await Hub.findById(hubId);
+    if (!hub) return res.status(404).json({ error: 'Hub not found' });
+
+    if (hub.creator.toString() !== userId)
+      return res.status(403).json({ error: 'Only the creator can update sidebar info' });
+
+    hub.announcements = announcements || [];
+    hub.rules = rules || [];
+    hub.discordLink = discordLink || '';
+
+    await hub.save();
+    res.json({ message: 'Sidebar info updated successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update sidebar info' });
+  }
+};
+
+// Create an announcement in a hub
+const createAnnouncement = async (req, res) => {
+  try {
+    const { hubId } = req.params;
+    const { content } = req.body;
+    const userId = req.user.id;
+
+    const hub = await Hub.findById(hubId);
+    if (!hub) return res.status(404).json({ error: 'Hub not found' });
+
+    // Only admins or creator
+    if (!hub.admins.includes(userId) && hub.creator.toString() !== userId) {
+      return res.status(403).json({ error: 'Only admins or creator can create announcements' });
+    }
+
+    const newAnnouncement = new Announcement({
+      hub: hubId,
+      author: userId,
+      content,
+    });
+
+    await newAnnouncement.save();
+
+    // Push announcement ref into hub
+    hub.announcements.push(newAnnouncement._id);
+    await hub.save();
+
+    res.status(201).json(newAnnouncement);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to create announcement' });
+  }
+};
+
+const updateHubInfo = async (req, res) => {
+  try {
+    const { hubId } = req.params;
+    const { name, isPrivate, discordLink } = req.body;
+    const userId = req.user.id;
+
+    const hub = await Hub.findById(hubId);
+    if (!hub) return res.status(404).json({ error: 'Hub not found' });
+
+    if (hub.creator.toString() !== userId) {
+      return res.status(403).json({ error: 'Only the creator can update hub info' });
+    }
+
+    if (name) hub.name = name;
+    if (typeof isPrivate === 'boolean') hub.isPrivate = isPrivate;
+    if (discordLink !== undefined) hub.discordLink = discordLink;
+
+    await hub.save();
+
+    res.json(hub);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update hub info' });
+  }
+};
+
+const updateHubRules = async (req, res) => {
+  try {
+    const { hubId } = req.params;
+    const { rules } = req.body;
+    const userId = req.user.id;
+
+    const hub = await Hub.findById(hubId);
+    if (!hub) return res.status(404).json({ error: 'Hub not found' });
+
+    if (hub.creator.toString() !== userId) {
+      return res.status(403).json({ error: 'Only the creator can update rules' });
+    }
+
+    hub.rules = rules;
+    await hub.save();
+
+    res.json(hub);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update rules' });
+  }
+};
+
 module.exports = {
   createHub,
   getAllHubs,
@@ -312,4 +500,11 @@ module.exports = {
   getHubOverviewStats,
   deleteHub,
   updateHubBanner,
+  getRecentActivities,
+  removeMember,
+  getSidebarInfo,
+  updateSidebarInfo,
+  createAnnouncement,
+  updateHubInfo,
+  updateHubRules,
 };

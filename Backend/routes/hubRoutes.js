@@ -17,6 +17,13 @@ const {
   getHubMembers,
   deleteHub,
   updateHubBanner,
+  getRecentActivities,
+  removeMember,
+  getSidebarInfo,
+  updateSidebarInfo,
+  createAnnouncement,
+  updateHubInfo,
+  updateHubRules,
 } = require('../controllers/hubController');
 const upload = require('../middleware/upload');
 const hub = require('../models/hub');
@@ -78,5 +85,25 @@ router.delete('/:hubId/admin', authenticate, deleteHub);
 
 // Upload banner (creator only)
 router.post('/:hubId/upload-banner', authenticate, upload.single('banner'), updateHubBanner);
+
+// Get recent activities in a hub (admin only)
+router.get('/:hubId/recent-activities', authenticate, getRecentActivities);
+
+router.delete('/:hubId/remove-member/:userId', authenticate, removeMember);
+
+// Get sidebar info
+router.get('/:hubId/sidebar',authenticate, getSidebarInfo);
+
+// Update sidebar info (creator only)
+router.put('/:hubId/sidebar', authenticate, updateSidebarInfo);
+
+// Create an announcement in a hub (admin only)
+router.post('/:hubId/announcements', authenticate, createAnnouncement);
+
+// Update hub info (creator only)
+router.put('/:hubId/info', authenticate, updateHubInfo);
+
+// Update hub rules (creator only)
+router.put('/:hubId/rules', authenticate, updateHubRules);
 
 module.exports = router;
