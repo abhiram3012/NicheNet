@@ -60,15 +60,28 @@ const getUserQuestions = async (req, res) => {
       author: req.params.userId
     })
       .populate("author", "username")
+      .populate('answers.author', 'username') 
       .sort({ createdAt: -1 });
 
-    const formatted = questions.map(q => ({
-      id: q._id,
-      title: q.title,
-      content: q.content,
-      answersCount: q.answers.length,
-      timePosted: q.createdAt
-    }));
+    const formatted = questions.map(question => ({
+      id: question._id,
+      title: question.title,
+      content: question.content,
+      author: question.author.username,
+      upvotes: question.upvotes,
+      downvotes: question.downvotes,
+      answersCount: question.answers.length,
+      timePosted: question.createdAt,
+      isCreator: req.user.id === question.author._id.toString(),
+      answers: question.answers.map(a => ({
+        id: a._id,
+        content: a.content,
+        author: a.author.username,
+        upvotes: a.upvotes,
+        downvotes: a.downvotes,
+        timePosted: a.createdAt
+      }))
+      }));
 
     res.json(formatted);
   } catch (err) {

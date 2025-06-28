@@ -15,4 +15,5 @@ const hubSchema = new mongoose.Schema({
   pendingRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 }, { timestamps: true });
 
-module.exports = mongoose.model('Hub', hubSchema);
+module.exports = mongoose.models.Hub || mongoose.model('Hub', hubSchema);
+

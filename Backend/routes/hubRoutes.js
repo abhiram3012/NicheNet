@@ -18,8 +18,8 @@ const {
   deleteHub,
   updateHubBanner,
 } = require('../controllers/hubController');
-const Hub = require('../models/Hub');
 const upload = require('../middleware/upload');
+const hub = require('../models/hub');
 
 // Create a new hub (authenticated users)
 router.post('/create', authenticate, createHub);
@@ -37,7 +37,7 @@ router.get('/suggestions', authenticate, getHubSuggestions);
 router.get('/search', async (req, res) => {
   const { query } = req.query;
   try {
-    const hubs = await Hub.find({
+    const hubs = await hub.find({
       name: { $regex: query, $options: 'i' } // case-insensitive match
     });
     res.json(hubs);
@@ -47,7 +47,7 @@ router.get('/search', async (req, res) => {
 });
 
 // Get a single hub by ID (no auth required)
-router.get('/:hubId', getHubById);
+router.get('/:hubId',authenticate, getHubById);
 
 // Join public hub (authenticated users)
 router.post('/:hubId/join', authenticate, joinHub);

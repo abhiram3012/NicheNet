@@ -50,6 +50,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
         if (!res.ok) throw new Error("Failed to fetch answers");
         const data = await res.json();
         setAllAnswers(data.answers);
+        console.log('Fetched answers:', data.answers);
     } catch (err) {
         console.error(err);
     }

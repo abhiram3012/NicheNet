@@ -118,12 +118,24 @@ const getUserPolls = async (req, res) => {
       .populate("author", "username")
       .sort({ createdAt: -1 });
 
-    res.json(polls.map(p => ({
-      id: p._id,
-      title: p.title,
-      totalVotes: p.totalVotes,
-      timePosted: p.createdAt
-    })));
+    const formattedPolls = polls.map(p => {
+      const totalVotes = p.options.reduce((sum, opt) => sum + opt.votes, 0);
+
+      return {
+        pollId: p._id,
+        title: p.title,
+        totalVotes,
+        createdAt: p.createdAt,
+        options: p.options.map(opt => ({
+          text: opt.text,
+          votes: opt.votes,
+          percentage: totalVotes === 0 ? 0 : ((opt.votes / totalVotes) * 100).toFixed(1)
+        })),
+        isCreator: p.author._id.toString() === req.user.id,
+      };
+    });
+
+    res.json(formattedPolls);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

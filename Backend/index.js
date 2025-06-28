@@ -15,7 +15,12 @@ const app = express();
 connectDB();
 
 app.use(express.json());
-app.use(cors());
+
+app.use(cors({
+  origin: 'http://localhost:8080', // ⬅️ Exactly match your frontend origin
+  credentials: true,               // ⬅️ Allow cookies / tokens
+}));
+
 
 // 🔓 Serve uploaded images from the /uploads/posts folder
 app.use('/uploads/posts', express.static(path.join(__dirname, 'uploads/posts')));

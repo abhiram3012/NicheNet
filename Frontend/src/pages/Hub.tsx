@@ -15,7 +15,7 @@ import { decodeJWT } from '@/utils/decodeJWT';
 import { EmptyState } from '@/components/EmptyState';
 import AskQuestionDialog from '@/components/AskQuestionDialog';
 import { timeAgo } from '@/utils/timeAgo';
-
+import { useNavigate } from 'react-router-dom';
 
 interface Hub {
   id: string;
@@ -68,6 +68,7 @@ const Hub = () => {
   const [userPolls, setUserPolls] = useState([]);
   const [userQuestions, setUserQuestions] = useState([]);
   const [questions, setQuestions] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchExtraData = async () => {
@@ -84,43 +85,50 @@ const Hub = () => {
       });
       const questionsData = await questionsRes.json();
       setQuestions(questionsData);
+      console.log('Fetched hub questions:', questionsData);
     };
 
     if (hubData) fetchExtraData();
   }, [hubId, hubData]);
 
-  useEffect(() => {
-    const fetchHubData = async () => {
-      try {
-        const res = await fetch(`http://localhost:5000/api/hubs/${hubId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+useEffect(() => {
+  const fetchHubData = async () => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/hubs/${hubId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
-        const data = await res.json();
-        const currentUserId = getCurrentUserId();
+      const data = await res.json();
+      const currentUserId = getCurrentUserId();
 
-        const updatedHub: Hub = {
-          ...data,
-          memberCount: data.members.length,
-          isCreator: data.creator === currentUserId,
-          isJoined: data.members.some(member => member._id === currentUserId),
-        };
-
-        setHubData(updatedHub);
-
-        const postsRes = await fetch(`http://localhost:5000/api/posts/hub/${hubId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-        const postsData = await postsRes.json();
-        setPosts(postsData);
-      } catch (error) {
-        console.error('Error fetching hub or posts:', error);
-      } finally {
-        setLoading(false);
+      // Check and redirect before setting state
+      if (data.isPrivate && data.status !== 'not_joined') {
+        navigate(`/hub/${hubId}/join-request`);
+        return;
       }
-    };
 
-    fetchHubData();
-  }, [hubId]);
+      const updatedHub: Hub = {
+        ...data,
+        memberCount: data.members.length,
+        isCreator: data.creator === currentUserId,
+        isJoined: data.status === 'joined',
+      };
+
+      setHubData(updatedHub);
+
+      const postsRes = await fetch(`http://localhost:5000/api/posts/hub/${hubId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+      const postsData = await postsRes.json();
+      setPosts(postsData);
+    } catch (error) {
+      console.error('Error fetching hub or posts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchHubData();
+}, [hubId, navigate]);
 
   const handleVote = async (pollId: string, optionText: string) => {
     try {
@@ -162,6 +170,7 @@ const Hub = () => {
       setUserPosts(postsData);
       setUserPolls(pollsData);
       setUserQuestions(questionsData);
+      console.log('user questions', questionsData);
     };
 
     fetchMyActivity();
@@ -344,58 +353,72 @@ const Hub = () => {
                   <div className="space-y-4">
                     {/* User's Posts */}
                     {userPosts.map((post) => (
-                      <PostCard key={`post-${post.id}`} post={post} />
+                      <PostCard key={`post-${post._id}`} post={post} />
                     ))}
                     
                     {/* User's Polls */}
                     {userPolls.map((poll) => (
-                      <Card key={`poll-${poll.id}`} className="bg-white dark:bg-gray-800 border dark:border-gray-700">
-                        <CardHeader>
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <CardTitle className="text-lg dark:text-white">{poll.title}</CardTitle>
-                              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-xs">
-                                  Poll
-                                </Badge>
-                                <span>•</span>
-                                <span>{poll.timePosted}</span>
+                        <Card key={poll.pollId} className="bg-white dark:bg-gray-800 border dark:border-gray-700">
+                          <CardHeader>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <CardTitle className="text-lg dark:text-white">{poll.title}</CardTitle>
+                                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                  <span>by you</span>
+                                  {poll.isCreator && (
+                                    <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 text-xs">
+                                      Creator
+                                    </Badge>
+                                  )}
+                                  <span>•</span>
+                                  <span>{timeAgo(poll.createdAt)}</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                                <BarChart3 className="w-4 h-4" />
+                                {poll.totalVotes} votes
                               </div>
                             </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                              <BarChart3 className="w-4 h-4" />
-                              {poll.totalVotes} votes
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-3">
+                              {poll.options.map((option, index) => (
+                                <div key={index} className="space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <Button
+                                      variant={poll.hasVoted && poll.userVote === option.text ? "default" : "outline"}
+                                      className={`flex-1 justify-start ${
+                                        poll.hasVoted && poll.userVote === option.text 
+                                          ? "dark:bg-blue-700 dark:hover:bg-blue-600" 
+                                          : "dark:border-gray-600 dark:hover:bg-gray-700"
+                                      }`}
+                                      onClick={() => handleVote(poll.pollId, option.text)}
+                                      disabled={poll.hasVoted}
+                                    >
+                                      {option.text}
+                                    </Button>
+                                    <span className="text-sm text-gray-500 dark:text-gray-400 ml-3">
+                                      {option.percentage}%
+                                    </span>
+                                  </div>
+                                  {poll.hasVoted && (
+                                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                      <div 
+                                        className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-300"
+                                        style={{ width: `${option.percentage}%` }}
+                                      ></div>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
                             </div>
-                          </div>
-                        </CardHeader>
-                      </Card>
-                    ))}
+                          </CardContent>
+                        </Card>
+                      ))}
                     
                     {/* User's Questions */}
                     {userQuestions.map((question) => (
-                      <Card key={`question-${question.id}`} className="bg-white dark:bg-gray-800 border dark:border-gray-700">
-                        <CardHeader>
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <CardTitle className="text-lg dark:text-white">{question.title}</CardTitle>
-                              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 text-xs">
-                                  Question
-                                </Badge>
-                                <span>•</span>
-                                <span>{question.timePosted}</span>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                              <MessageSquare className="w-4 h-4" />
-                              {question.answersCount} answers
-                            </div>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-gray-600 dark:text-gray-300">{question.content}</p>
-                        </CardContent>
-                      </Card>
+                      <QuestionCard key={question.id} question={question} />
                     ))}
                   </div>
                 ) : (

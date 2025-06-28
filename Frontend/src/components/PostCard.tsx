@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronUp, ChevronDown, MessageSquare, Crown } from 'lucide-react';
 import axios from 'axios';
+import { timeAgo } from '@/utils/timeAgo';
 
 interface Post {
   _id: string;
@@ -138,7 +139,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, hubCreatorId }) => {
                 )}
               </div>
               <span>•</span>
-              <span>{timePosted}</span>
+              <span>{timeAgo(timePosted)}</span>
             </div>
 
             {/* Title */}

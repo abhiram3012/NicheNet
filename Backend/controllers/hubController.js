@@ -1,13 +1,14 @@
-const Hub = require('../models/Hub');
 const User = require('../models/User');
 const Post = require('../models/Post'); // assuming Post model exists
+const Hub = require('../models/hub');
 
 // Create new hub
 const createHub = async (req, res) => {
   try {
     const { name, description, isPrivate } = req.body;
-    const creator = req.user.id; // From JWT
-    const hub = new Hub({
+    const creator = req.user.id;
+
+    const newHub = new Hub({
       name,
       description,
       isPrivate: isPrivate || false,
@@ -16,12 +17,13 @@ const createHub = async (req, res) => {
       admins: [creator],
     });
 
-    await hub.save();
+    await newHub.save();
 
-    // Add hub to creator's joinedHubs
-    await User.findByIdAndUpdate(creator, { $push: { joinedHubs: hub._id } });
+    await User.findByIdAndUpdate(creator, {
+      $push: { joinedHubs: newHub._id, createdHubs: newHub._id },
+    });
 
-    res.status(201).json(hub);
+    res.status(201).json(newHub);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to create hub' });
@@ -50,17 +52,29 @@ const getAllHubs = async (req, res) => {
   }
 };
 
-// Get hub by ID
 const getHubById = async (req, res) => {
   try {
     const hub = await Hub.findById(req.params.hubId)
       .populate('members', 'username')
       .select('-__v');
-
     if (!hub) return res.status(404).json({ error: 'Hub not found' });
 
-    res.json(hub);
+    let status = 'not_joined';
+    if (req.user && req.user.id) {
+      const userId = req.user.id;
+      if (hub.members.some(member => member._id.toString() === userId)) {
+        status = 'joined';
+      } else if (hub.pendingRequests.some(id => id.toString() === userId)) {
+        status = 'requested';
+      }
+    }
+
+    res.json({
+      ...hub.toObject(),
+      status,
+    });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Failed to fetch hub' });
   }
 };
@@ -69,14 +83,12 @@ const getHubById = async (req, res) => {
 const getHubSuggestions = async (req, res) => {
   try {
     const userId = req.user.id;
-
-    // Get the user's joined hubs
     const user = await User.findById(userId).select('joinedHubs');
 
-    // Fetch public hubs that the user is NOT already in
     const suggestedHubs = await Hub.find({
-      _id: { $nin: user.joinedHubs }
-    }).select('name description category members imageUrl isPrivate');
+      _id: { $nin: user.joinedHubs },
+      isPrivate: false,
+    }).select('name description tags members bannerUrl');
 
     res.json(suggestedHubs);
   } catch (err) {
@@ -117,9 +129,7 @@ const leaveHub = async (req, res) => {
     hub.members = hub.members.filter(id => id.toString() !== userId);
     await hub.save();
 
-    await User.findByIdAndUpdate(userId, {
-      $pull: { joinedHubs: hub._id }
-    });
+    await User.findByIdAndUpdate(userId, { $pull: { joinedHubs: hub._id } });
 
     res.json({ message: 'Left the hub successfully' });
   } catch (err) {
@@ -133,20 +143,22 @@ const requestToJoinPrivateHub = async (req, res) => {
   try {
     const userId = req.user.id;
     const hub = await Hub.findById(req.params.hubId);
+
     if (!hub) return res.status(404).json({ error: 'Hub not found' });
     if (!hub.isPrivate) return res.status(400).json({ error: 'This hub is public. Join directly.' });
-    
+
     if (!hub.pendingRequests.includes(userId)) {
       hub.pendingRequests.push(userId);
       await hub.save();
     }
+    console.log(`User ${userId} requested to join hub ${hub._id}`);
     res.json({ message: 'Request sent to join hub' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to request join' });
   }
 };
 
-// Approve request (admin only)
+// Approve join request (admin only)
 const approveJoinRequest = async (req, res) => {
   try {
     const adminId = req.user.id;
@@ -154,10 +166,9 @@ const approveJoinRequest = async (req, res) => {
     const hub = await Hub.findById(hubId);
 
     if (!hub) return res.status(404).json({ error: 'Hub not found' });
-    
-    if (hub.admins.toString() !== adminId)
-      return res.status(403).json({ error: 'Only the hub creator can approve requests' });
-    
+    if (!hub.admins.map(id => id.toString()).includes(adminId))
+      return res.status(403).json({ error: 'Only admins can approve requests' });
+
     if (!hub.pendingRequests.includes(userId)) {
       return res.status(400).json({ error: 'User did not request to join' });
     }
@@ -174,7 +185,7 @@ const approveJoinRequest = async (req, res) => {
   }
 };
 
-// Reject request (admin only)
+// Reject join request (admin only)
 const rejectJoinRequest = async (req, res) => {
   try {
     const adminId = req.user.id;
@@ -182,8 +193,8 @@ const rejectJoinRequest = async (req, res) => {
     const hub = await Hub.findById(hubId);
 
     if (!hub) return res.status(404).json({ error: 'Hub not found' });
-    if (hub.admins.toString() !== adminId)
-      return res.status(403).json({ error: 'Only the hub creator can reject requests' });
+    if (!hub.admins.map(id => id.toString()).includes(adminId))
+      return res.status(403).json({ error: 'Only admins can reject requests' });
 
     hub.pendingRequests = hub.pendingRequests.filter(id => id.toString() !== userId);
     await hub.save();
@@ -194,7 +205,7 @@ const rejectJoinRequest = async (req, res) => {
   }
 };
 
-// Get pending join requests for a private hub (admin only)
+// Get pending join requests
 const getPendingJoinRequests = async (req, res) => {
   try {
     const hub = await Hub.findById(req.params.hubId).populate('pendingRequests', 'username');
@@ -206,7 +217,7 @@ const getPendingJoinRequests = async (req, res) => {
   }
 };
 
-// Get members of a hub
+// Get members
 const getHubMembers = async (req, res) => {
   try {
     const hub = await Hub.findById(req.params.hubId).populate('members', 'username');
@@ -217,7 +228,7 @@ const getHubMembers = async (req, res) => {
   }
 };
 
-// Get overview stats for a hub
+// Get hub overview stats
 const getHubOverviewStats = async (req, res) => {
   try {
     const hubId = req.params.hubId;
@@ -238,7 +249,7 @@ const getHubOverviewStats = async (req, res) => {
   }
 };
 
-// Delete a hub (only creator can delete)
+// Delete hub
 const deleteHub = async (req, res) => {
   try {
     const { hubId } = req.params;
@@ -247,9 +258,8 @@ const deleteHub = async (req, res) => {
     const hub = await Hub.findById(hubId);
     if (!hub) return res.status(404).json({ error: 'Hub not found' });
 
-    if (hub.creator.toString() !== userId) {
+    if (hub.creator.toString() !== userId)
       return res.status(403).json({ error: 'Only the creator can delete this hub' });
-    }
 
     await Hub.findByIdAndDelete(hubId);
     await Post.deleteMany({ hub: hubId });
@@ -260,7 +270,7 @@ const deleteHub = async (req, res) => {
   }
 };
 
-// Update hub banner (only creator)
+// Update hub banner
 const updateHubBanner = async (req, res) => {
   try {
     const hubId = req.params.hubId;
@@ -269,13 +279,11 @@ const updateHubBanner = async (req, res) => {
     const hub = await Hub.findById(hubId);
     if (!hub) return res.status(404).json({ error: 'Hub not found' });
 
-    if (hub.creator.toString() !== userId) {
+    if (hub.creator.toString() !== userId)
       return res.status(403).json({ error: 'Only the creator can update the banner' });
-    }
 
-    if (!req.file) {
+    if (!req.file)
       return res.status(400).json({ error: 'No banner image uploaded' });
-    }
 
     const bannerUrl = `/uploads/posts/${req.file.filename}`;
     hub.bannerUrl = bannerUrl;
