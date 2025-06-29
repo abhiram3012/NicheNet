@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import axios from 'axios';
+import NicheNetLogo from './NicheNetLogo';
 
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -61,10 +62,10 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto flex items-center justify-between relative">
         {/* Logo */}
         <Link to="/dashboard" className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">H</span>
-          </div>
-          <h1 className="text-xl font-bold text-white">HobbyHub</h1>
+          <NicheNetLogo width={36} height={36} />
+          <span className="text-xl font-bold bg-gradient-to-r from-pink-500 to-orange-500 bg-clip-text text-transparent">
+            NicheNet
+          </span>
         </Link>
 
         {/* Search */}

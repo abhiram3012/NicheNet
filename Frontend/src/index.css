@@ -2,6 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
+
+@keyframes slide-top-left {
+  0% { transform: translate(0, 0); opacity: 0; }
+  100% { transform: translate(-50%, -50%); opacity: 1; }
+}
+@keyframes slide-top-right {
+  0% { transform: translate(0, 0); opacity: 0; }
+  100% { transform: translate(50%, -50%); opacity: 1; }
+}
+@keyframes slide-bottom-left {
+  0% { transform: translate(0, 0); opacity: 0; }
+  100% { transform: translate(-50%, 50%); opacity: 1; }
+}
+@keyframes slide-bottom-right {
+  0% { transform: translate(0, 0); opacity: 0; }
+  100% { transform: translate(50%, 50%); opacity: 1; }
+}
+
+.animate-slide-top-left { animation: slide-top-left 2s ease forwards; }
+.animate-slide-top-right { animation: slide-top-right 2s ease forwards; }
+.animate-slide-bottom-left { animation: slide-bottom-left 2s ease forwards; }
+.animate-slide-bottom-right { animation: slide-bottom-right 2s ease forwards; }
+
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 1.5s ease forwards;
+}
+.animate-fade-in-up.delay-300 { animation-delay: 0.3s; }
+.animate-fade-in-up.delay-500 { animation-delay: 0.5s; }
+.animate-fade-in-up.delay-700 { animation-delay: 0.7s; }
+.animate-fade-in-up.delay-900 { animation-delay: 0.9s; }
+.animate-fade-in-up.delay-1000 { animation-delay: 1s; }
+
+
 @layer base {
   :root {
     --background: 0 0% 100%;
