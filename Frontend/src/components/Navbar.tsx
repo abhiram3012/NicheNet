@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Search, Plus, Bell, User, Settings, LogOut } from 'lucide-react';
+import { Search, Bell, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -25,7 +25,6 @@ const Navbar = () => {
     navigate('/signin');
   };
 
-  // Debounced search effect
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       const fetchHubs = async () => {
@@ -45,7 +44,7 @@ const Navbar = () => {
       };
 
       fetchHubs();
-    }, 300); // Debounce delay
+    }, 300);
 
     return () => clearTimeout(delayDebounce);
   }, [searchQuery]);
@@ -58,14 +57,14 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 sticky top-0 z-50">
+    <nav className="bg-gray-900 border-b border-gray-700 px-4 py-3 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between relative">
         {/* Logo */}
         <Link to="/dashboard" className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">H</span>
           </div>
-          <h1 className="text-xl font-bold text-gray-800 dark:text-white">HobbyHub</h1>
+          <h1 className="text-xl font-bold text-white">HobbyHub</h1>
         </Link>
 
         {/* Search */}
@@ -76,18 +75,17 @@ const Navbar = () => {
               placeholder="Search hubs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-800 transition-colors text-gray-900 dark:text-white"
+              className="pl-10 bg-gray-800 border-gray-700 focus:bg-gray-800 text-white transition-colors"
             />
           </div>
 
-          {/* Dropdown results */}
           {showDropdown && searchResults.length > 0 && (
-            <ul className="absolute z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md dark:shadow-gray-900/50 w-full mt-1 rounded-md max-h-60 overflow-y-auto">
+            <ul className="absolute z-50 bg-gray-800 border border-gray-700 shadow-md w-full mt-1 rounded-md max-h-60 overflow-y-auto">
               {searchResults.map((hub) => (
                 <li
                   key={hub._id}
                   onClick={() => handleResultClick(hub._id)}
-                  className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-800 dark:text-gray-200"
+                  className="px-4 py-2 hover:bg-gray-700 cursor-pointer text-gray-200"
                 >
                   {hub.name}
                 </li>
@@ -101,7 +99,7 @@ const Navbar = () => {
           <Button 
             variant="ghost" 
             size="sm" 
-            className="relative text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+            className="relative text-gray-300 hover:bg-gray-800"
           >
             <Bell className="w-4 h-4" />
             <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -112,7 +110,7 @@ const Navbar = () => {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="rounded-full p-1 hover:bg-gray-800"
               >
                 <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center">
                   <User className="w-4 h-4 text-white" />
@@ -121,18 +119,18 @@ const Navbar = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent 
               align="end" 
-              className="w-48 bg-white dark:bg-gray-800 border dark:border-gray-700"
+              className="w-48 bg-gray-800 border border-gray-700"
             >
-              <DropdownMenuItem asChild className="focus:bg-gray-100 dark:focus:bg-gray-700">
-                <Link to="/profile" className="flex items-center text-gray-700 dark:text-gray-200">
+              <DropdownMenuItem asChild className="focus:bg-gray-700">
+                <Link to="/profile" className="flex items-center text-gray-200">
                   <User className="w-4 h-4 mr-2" />
                   Profile
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuSeparator className="dark:border-gray-700" />
+              <DropdownMenuSeparator className="border-gray-700" />
               <DropdownMenuItem 
                 onClick={handleLogout} 
-                className="text-red-600 dark:text-red-400 focus:bg-red-50 dark:focus:bg-red-900/20"
+                className="text-red-400 focus:bg-red-900/20"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout

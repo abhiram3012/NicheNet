@@ -6,7 +6,7 @@ import { Megaphone, ShieldCheck, Link as LinkIcon } from 'lucide-react';
 interface Announcement {
   _id: string;
   content: string;
-  author: {id: string, username: string };
+  author: { id: string; username: string };
   createdAt: string;
 }
 
@@ -33,10 +33,10 @@ const HubSidebar: React.FC<HubSidebarProps> = ({ hubData }) => {
   return (
     <div className="space-y-6">
       {/* Announcements */}
-      <Card>
+      <Card className="bg-gray-800 border-gray-700">
         <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Megaphone className="w-5 h-5" />
+          <CardTitle className="text-lg flex items-center gap-2 text-white">
+            <Megaphone className="w-5 h-5 text-white" />
             Announcements
           </CardTitle>
         </CardHeader>
@@ -46,31 +46,27 @@ const HubSidebar: React.FC<HubSidebarProps> = ({ hubData }) => {
               announcements.map((announcement) => (
                 <div
                   key={announcement._id}
-                  className="bg-gray-50 p-3 rounded-md dark:bg-gray-700/50"
+                  className="bg-gray-700/50 p-3 rounded-md"
                 >
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    {announcement.content}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-sm text-gray-300">{announcement.content}</p>
+                  <p className="text-xs text-gray-400 mt-1">
                     By {announcement.author.username} •{' '}
                     {new Date(announcement.createdAt).toLocaleDateString()}
                   </p>
                 </div>
               ))
             ) : (
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                No announcements yet.
-              </p>
+              <p className="text-sm text-gray-400">No announcements yet.</p>
             )}
           </div>
         </CardContent>
       </Card>
 
       {/* Rules */}
-      <Card>
+      <Card className="bg-gray-800 border-gray-700">
         <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5" />
+          <CardTitle className="text-lg flex items-center gap-2 text-white">
+            <ShieldCheck className="w-5 h-5 text-white" />
             Community Rules
           </CardTitle>
         </CardHeader>
@@ -79,14 +75,14 @@ const HubSidebar: React.FC<HubSidebarProps> = ({ hubData }) => {
             {rules.length > 0 ? (
               rules.map((rule, index) => (
                 <div key={index} className="flex gap-2">
-                  <span className="text-sm font-medium text-blue-600 min-w-[20px]">
+                  <span className="text-sm font-medium text-blue-400 min-w-[20px]">
                     {index + 1}.
                   </span>
-                  <span className="text-sm text-gray-700 dark:text-gray-300">{rule}</span>
+                  <span className="text-sm text-gray-300">{rule}</span>
                 </div>
               ))
             ) : (
-              <p className="text-sm text-gray-500 dark:text-gray-400">No rules set.</p>
+              <p className="text-sm text-gray-400">No rules set.</p>
             )}
           </div>
         </CardContent>
@@ -94,10 +90,10 @@ const HubSidebar: React.FC<HubSidebarProps> = ({ hubData }) => {
 
       {/* Discord Link */}
       {discordLink && (
-        <Card>
+        <Card className="bg-gray-800 border-gray-700">
           <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <LinkIcon className="w-5 h-5" />
+            <CardTitle className="text-lg flex items-center gap-2 text-white">
+              <LinkIcon className="w-5 h-5 text-white" />
               Discord Server
             </CardTitle>
           </CardHeader>
@@ -106,7 +102,7 @@ const HubSidebar: React.FC<HubSidebarProps> = ({ hubData }) => {
               href={discordLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block w-full text-center bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors"
+              className="inline-block w-full text-center bg-blue-700 text-white py-2 rounded-md hover:bg-blue-600 transition-colors"
             >
               Join on Discord
             </a>

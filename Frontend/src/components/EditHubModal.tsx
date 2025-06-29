@@ -25,10 +25,10 @@ const EditHubModal = ({ open, setOpen, hubData, onSubmit }) => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[425px] rounded-lg">
+      <DialogContent className="sm:max-w-[425px] rounded-lg bg-gray-800 border border-gray-700">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">Edit Hub Information</DialogTitle>
-          <DialogDescription className="text-muted-foreground">
+          <DialogTitle className="text-xl font-semibold text-white">Edit Hub Information</DialogTitle>
+          <DialogDescription className="text-gray-400">
             Update your hub details
           </DialogDescription>
         </DialogHeader>
@@ -36,7 +36,7 @@ const EditHubModal = ({ open, setOpen, hubData, onSubmit }) => {
         <form onSubmit={handleSubmit} className="mt-4 space-y-6">
           <div className="space-y-3">
             <div>
-              <Label htmlFor="hubName" className="block mb-2 font-medium">
+              <Label htmlFor="hubName" className="block mb-2 font-medium text-gray-300">
                 Hub Name
               </Label>
               <Input
@@ -44,16 +44,16 @@ const EditHubModal = ({ open, setOpen, hubData, onSubmit }) => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter hub name"
-                className="py-2 px-3"
+                className="py-2 px-3 bg-gray-700 border-gray-600 text-white placeholder-gray-400"
               />
             </div>
             
-            <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/20">
+            <div className="flex items-center justify-between p-3 border border-gray-700 rounded-lg bg-gray-700">
               <div className="space-y-1">
-                <Label htmlFor="privacyToggle" className="font-medium">
+                <Label htmlFor="privacyToggle" className="font-medium text-gray-300">
                   Private Hub
                 </Label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-gray-400">
                   {isPrivate 
                     ? "Visible only to invited members" 
                     : "Visible to all community members"}
@@ -68,15 +68,15 @@ const EditHubModal = ({ open, setOpen, hubData, onSubmit }) => {
             </div>
             
             <div>
-              <Label htmlFor="discordLink" className="block mb-2 font-medium">
-                Discord Link <span className="text-muted-foreground font-normal">(optional)</span>
+              <Label htmlFor="discordLink" className="block mb-2 font-medium text-gray-300">
+                Discord Link <span className="text-gray-400 font-normal">(optional)</span>
               </Label>
               <Input
                 id="discordLink"
                 value={discordLink}
                 onChange={(e) => setDiscordLink(e.target.value)}
                 placeholder="https://discord.gg/..."
-                className="py-2 px-3"
+                className="py-2 px-3 bg-gray-700 border-gray-600 text-white placeholder-gray-400"
               />
             </div>
           </div>
@@ -86,10 +86,14 @@ const EditHubModal = ({ open, setOpen, hubData, onSubmit }) => {
               variant="outline" 
               onClick={() => setOpen(false)}
               type="button"
+              className="border-gray-600 text-gray-200 hover:bg-gray-700"
             >
               Cancel
             </Button>
-            <Button type="submit">
+            <Button 
+              type="submit"
+              className="bg-blue-700 hover:bg-blue-600 text-white"
+            >
               Save Changes
             </Button>
           </div>

@@ -37,35 +37,35 @@ const CommentCard = ({ comment, postId, onReplySubmit }) => {
   };
 
   return (
-    <Card className="bg-white dark:bg-gray-800 border dark:border-gray-700">
+    <Card className="bg-gray-800 border border-gray-700 text-gray-200">
       <CardContent className="p-4">
         <div className="flex flex-col">
-          {/* Comment Header */}
-          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
-            <span className="font-medium dark:text-gray-200">
+          {/* Header */}
+          <div className="flex items-center gap-2 text-sm text-gray-400 mb-1">
+            <span className="font-medium text-gray-100">
               {comment.author?.username || "Anonymous"}
             </span>
             <span>•</span>
             <span>{timeAgo(comment.createdAt)}</span>
           </div>
 
-          {/* Comment Content */}
-          <p className="text-gray-800 dark:text-gray-200 mb-2">
+          {/* Content */}
+          <p className="text-gray-200 mb-2">
             {comment.content}
           </p>
 
-          {/* Reply Button */}
+          {/* Reply button */}
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setReplying(!replying)}
-            className="text-blue-600 dark:text-blue-400 w-fit hover:text-blue-800 dark:hover:text-blue-300"
+            className="text-blue-400 w-fit hover:text-blue-300"
           >
             <MessageCircle className="w-4 h-4 mr-1" />
             Reply
           </Button>
 
-          {/* Reply Input */}
+          {/* Reply form */}
           {replying && (
             <div className="mt-3">
               <textarea
@@ -73,13 +73,13 @@ const CommentCard = ({ comment, postId, onReplySubmit }) => {
                 placeholder="Write a reply..."
                 value={replyContent}
                 onChange={(e) => setReplyContent(e.target.value)}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                className="w-full border border-gray-600 rounded p-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-gray-200 placeholder-gray-500"
               />
               <div className="flex justify-end gap-2 mt-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+                  className="border-gray-600 text-gray-200 hover:bg-gray-700"
                   onClick={() => {
                     setReplying(false);
                     setReplyContent("");
@@ -88,7 +88,7 @@ const CommentCard = ({ comment, postId, onReplySubmit }) => {
                   Cancel
                 </Button>
                 <Button
-                  className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white"
+                  className="bg-blue-700 hover:bg-blue-600 text-gray-200"
                   size="sm"
                   onClick={handleReply}
                 >
@@ -99,13 +99,13 @@ const CommentCard = ({ comment, postId, onReplySubmit }) => {
             </div>
           )}
 
-          {/* Toggle Immediate Replies */}
+          {/* Toggle replies */}
           {comment.replies?.length > 0 && (
             <Button
               variant="link"
               size="sm"
               onClick={() => setShowReplies((prev) => !prev)}
-              className="mt-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300"
+              className="mt-2 text-gray-400 hover:text-gray-300"
             >
               {showReplies
                 ? "Hide Replies"
@@ -113,9 +113,9 @@ const CommentCard = ({ comment, postId, onReplySubmit }) => {
             </Button>
           )}
 
-          {/* Only render immediate children if toggled */}
+          {/* Nested replies */}
           {showReplies && comment.replies?.length > 0 && (
-            <div className="mt-4 pl-4 border-l border-gray-200 dark:border-gray-700 space-y-3">
+            <div className="mt-4 pl-4 border-l border-gray-700 space-y-3">
               {comment.replies.map((reply) => (
                 <CommentCard
                   key={reply._id}

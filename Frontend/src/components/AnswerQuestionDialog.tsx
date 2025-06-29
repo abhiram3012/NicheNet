@@ -65,21 +65,21 @@ const AnswerQuestionDialog: React.FC<AnswerQuestionDialogProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] bg-gray-900 text-gray-200 border border-gray-700">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-gray-200">
             <MessageSquare className="w-5 h-5" />
             Answer Question
           </DialogTitle>
-          <p className="text-sm text-gray-600 mt-2">
-            Answering: <span className="font-medium">{questionTitle}</span>
+          <p className="text-sm text-gray-400 mt-2">
+            Answering: <span className="font-medium text-gray-200">{questionTitle}</span>
           </p>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label
               htmlFor="answer-content"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-gray-300 mb-2"
             >
               Your Answer
             </label>
@@ -88,15 +88,23 @@ const AnswerQuestionDialog: React.FC<AnswerQuestionDialogProps> = ({
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
               placeholder="Share your knowledge and help others..."
-              className="min-h-[120px]"
+              className="min-h-[120px] bg-gray-800 text-gray-200 border-gray-600 placeholder-gray-500 focus:ring-0 focus:border-gray-500"
               required
             />
           </div>
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
+            <Button
+              type="button"
+              className="border border-gray-600 bg-gray-800 text-gray-200 hover:bg-gray-700"
+              onClick={() => setIsOpen(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit" className="bg-green-600 hover:bg-green-700" disabled={loading}>
+            <Button
+              type="submit"
+              className="bg-green-700 text-gray-200 hover:bg-green-600"
+              disabled={loading}
+            >
               {loading ? 'Posting...' : 'Post Answer'}
             </Button>
           </div>

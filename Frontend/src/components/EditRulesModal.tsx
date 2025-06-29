@@ -13,16 +13,22 @@ const EditRulesModal = ({ open, setOpen, hubData, onSubmit }) => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
+      <DialogContent className="bg-gray-900 text-gray-200 border-gray-700">
         <DialogHeader>
-          <DialogTitle>Edit Hub Rules</DialogTitle>
+          <DialogTitle className="text-gray-100">Edit Hub Rules</DialogTitle>
         </DialogHeader>
-        <Textarea value={rules} onChange={(e) => setRules(e.target.value)} placeholder="Write your rules here..." />
+        <Textarea
+          value={rules}
+          onChange={(e) => setRules(e.target.value)}
+          placeholder="Write your rules here..."
+          className="bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-blue-600"
+        />
         <Button
           onClick={() => {
             onSubmit({ rules });
             setOpen(false);
           }}
+          className="mt-4 bg-blue-700 hover:bg-blue-600 text-white"
         >
           Save Rules
         </Button>

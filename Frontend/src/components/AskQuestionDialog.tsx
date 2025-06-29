@@ -50,7 +50,7 @@ const AskQuestionDialog: React.FC<AskQuestionDialogProps> = ({ children, onQuest
       setTitle('');
       setContent('');
       setIsOpen(false);
-      onQuestionPosted?.(); // refresh the question list
+      onQuestionPosted?.();
     } catch (err) {
       alert(err.message || 'Something went wrong');
     } finally {
@@ -63,16 +63,16 @@ const AskQuestionDialog: React.FC<AskQuestionDialogProps> = ({ children, onQuest
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] bg-gray-900 text-gray-200 border border-gray-700">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-gray-200">
             <HelpCircle className="w-5 h-5" />
             Ask a Question
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="question-title" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="question-title" className="block text-sm font-medium text-gray-300 mb-2">
               Question Title
             </label>
             <Input
@@ -81,11 +81,12 @@ const AskQuestionDialog: React.FC<AskQuestionDialogProps> = ({ children, onQuest
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="What's your question about?"
+              className="bg-gray-800 text-gray-200 border-gray-600 placeholder-gray-500 focus:ring-0 focus:border-gray-500"
               required
             />
           </div>
           <div>
-            <label htmlFor="question-content" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="question-content" className="block text-sm font-medium text-gray-300 mb-2">
               Question Details
             </label>
             <Textarea
@@ -93,15 +94,23 @@ const AskQuestionDialog: React.FC<AskQuestionDialogProps> = ({ children, onQuest
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Provide more details about your question..."
-              className="min-h-[120px]"
+              className="min-h-[120px] bg-gray-800 text-gray-200 border-gray-600 placeholder-gray-500 focus:ring-0 focus:border-gray-500"
               required
             />
           </div>
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
+            <Button
+              type="button"
+              className="border border-gray-600 bg-gray-800 text-gray-200 hover:bg-gray-700"
+              onClick={() => setIsOpen(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit" className="bg-purple-600 hover:bg-purple-700" disabled={loading}>
+            <Button
+              type="submit"
+              className="bg-purple-700 text-gray-200 hover:bg-purple-600"
+              disabled={loading}
+            >
               {loading ? 'Posting...' : 'Post Question'}
             </Button>
           </div>

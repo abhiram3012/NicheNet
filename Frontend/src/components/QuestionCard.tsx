@@ -32,38 +32,38 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
   const [allAnswers, setAllAnswers] = useState<Answer[]>(question.answers);
 
   const fetchAnswers = async () => {
-  try {
-    const res = await fetch(`http://localhost:5000/api/questions/${question.id}`);
-    if (!res.ok) throw new Error("Failed to fetch answers");
-    const data = await res.json();
-    setAllAnswers(data.answers);
-    setShowAnswers(true); // ✅ Ensure answers are shown after fetch
-    console.log('Fetched answers:', data.answers);
-  } catch (err) {
-    console.error(err);
-  }
-};
+    try {
+      const res = await fetch(`http://localhost:5000/api/questions/${question.id}`);
+      if (!res.ok) throw new Error("Failed to fetch answers");
+      const data = await res.json();
+      setAllAnswers(data.answers);
+      setShowAnswers(true);
+      console.log('Fetched answers:', data.answers);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <Card
-      className={`bg-white dark:bg-gray-800 hover:shadow-md transition-shadow border dark:border-gray-700 ${
-        question.isCreator ? 'ring-2 ring-yellow-200 dark:ring-yellow-500/60 border-yellow-300 dark:border-yellow-500/50' : ''
+      className={`bg-gray-800 hover:shadow-md transition-shadow border border-gray-700 ${
+        question.isCreator ? 'ring-2 ring-yellow-500/60 border-yellow-500/50' : ''
       }`}
     >
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-2">
+            <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
               <div className="flex items-center gap-2">
                 <span
                   className={`font-medium ${
-                    question.isCreator ? 'text-yellow-700 dark:text-yellow-400' : 'dark:text-gray-200'
+                    question.isCreator ? 'text-yellow-400' : 'text-gray-200'
                   }`}
                 >
                   {question.author}
                 </span>
                 {question.isCreator && (
-                  <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 text-xs px-2 py-1 flex items-center gap-1">
+                  <Badge className="bg-yellow-900/30 text-yellow-300 text-xs px-2 py-1 flex items-center gap-1">
                     <Crown className="w-3 h-3" />
                     Creator
                   </Badge>
@@ -73,7 +73,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
               <span>{question.timePosted}</span>
             </div>
             <Link to={`/hub/${hubId}/question/${question.id}`}>
-              <CardTitle className="text-lg hover:text-purple-600 dark:hover:text-purple-400 cursor-pointer">
+              <CardTitle className="text-lg text-white hover:text-purple-400 cursor-pointer">
                 {question.title}
               </CardTitle>
             </Link>
@@ -82,13 +82,13 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
       </CardHeader>
 
       <CardContent>
-        <p className="text-gray-600 dark:text-gray-300 mb-4">{question.content}</p>
+        <p className="text-gray-300 mb-4">{question.content}</p>
 
         <div className="flex items-center gap-4 mb-4">
           <Button
             variant="ghost"
             size="sm"
-            className="flex items-center gap-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+            className="flex items-center gap-2 text-gray-400 hover:text-gray-300"
             onClick={() => setShowAnswers(!showAnswers)}
           >
             <MessageSquare className="w-4 h-4" />
@@ -100,25 +100,25 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
             questionTitle={question.title}
             onAnswerPosted={fetchAnswers}
           >
-            <Button variant="outline" size="sm" className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+            <Button variant="outline" size="sm" className="border-gray-600 text-gray-200 hover:bg-gray-700">
               Answer
             </Button>
           </AnswerQuestionDialog>
         </div>
 
         {showAnswers && (
-          <div className="border-t pt-4 border-gray-200 dark:border-gray-700 space-y-4">
-            <h4 className="font-medium text-gray-800 dark:text-white">Answers</h4>
+          <div className="border-t pt-4 border-gray-700 space-y-4">
+            <h4 className="font-medium text-white">Answers</h4>
             {allAnswers.map((answer) => (
-              <div key={answer.id} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+              <div key={answer.id} className="bg-gray-700/50 rounded-lg p-4">
                 <div className="flex items-start gap-3">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-2">
-                      <span className="font-medium dark:text-gray-200">{answer.author}</span>
+                    <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
+                      <span className="font-medium text-gray-200">{answer.author}</span>
                       <span>•</span>
                       <span>{answer.timePosted}</span>
                     </div>
-                    <p className="text-gray-700 dark:text-gray-300 text-sm">{answer.content}</p>
+                    <p className="text-gray-300 text-sm">{answer.content}</p>
                   </div>
                 </div>
               </div>
