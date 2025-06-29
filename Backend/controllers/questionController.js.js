@@ -147,11 +147,124 @@ const getQuestionById = async (req, res) => {
   }
 };
 
+// Upvote a question
+const upvoteQuestion = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const question = await Question.findById(req.params.questionId);
+    if (!question) return res.status(404).json({ error: 'Question not found' });
+
+    const hasUpvoted = question.upvotes.includes(userId);
+    const hasDownvoted = question.downvotes.includes(userId);
+
+    if (!hasUpvoted) {
+      question.upvotes.push(userId);
+    }
+
+    if (hasDownvoted) {
+      question.downvotes = question.downvotes.filter(id => id.toString() !== userId);
+    }
+
+    await question.save();
+    res.json({ upvotes: question.upvotes.length, downvotes: question.downvotes.length });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to upvote question' });
+  }
+};
+
+// Downvote a question
+const downvoteQuestion = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const question = await Question.findById(req.params.questionId);
+    if (!question) return res.status(404).json({ error: 'Question not found' });
+
+    const hasDownvoted = question.downvotes.includes(userId);
+    const hasUpvoted = question.upvotes.includes(userId);
+
+    if (!hasDownvoted) {
+      question.downvotes.push(userId);
+    }
+
+    if (hasUpvoted) {
+      question.upvotes = question.upvotes.filter(id => id.toString() !== userId);
+    }
+
+    await question.save();
+    res.json({ upvotes: question.upvotes.length, downvotes: question.downvotes.length });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to downvote question' });
+  }
+};
+
+const upvoteAnswer = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const question = await Question.findById(req.params.questionId);
+    if (!question) return res.status(404).json({ error: 'Question not found' });
+
+    const answer = question.answers.id(req.params.answerId);
+    if (!answer) return res.status(404).json({ error: 'Answer not found' });
+
+    if (!answer.upvotes) answer.upvotes = [];
+    if (!answer.downvotes) answer.downvotes = [];
+
+    const hasUpvoted = answer.upvotes.includes(userId);
+    const hasDownvoted = answer.downvotes.includes(userId);
+
+    if (!hasUpvoted) {
+      answer.upvotes.push(userId);
+    }
+
+    if (hasDownvoted) {
+      answer.downvotes = answer.downvotes.filter(id => id.toString() !== userId);
+    }
+
+    await question.save();
+    res.json({ upvotes: answer.upvotes.length, downvotes: answer.downvotes.length });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to upvote answer' });
+  }
+};
+
+const downvoteAnswer = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const question = await Question.findById(req.params.questionId);
+    if (!question) return res.status(404).json({ error: 'Question not found' });
+
+    const answer = question.answers.id(req.params.answerId);
+    if (!answer) return res.status(404).json({ error: 'Answer not found' });
+
+    if (!answer.upvotes) answer.upvotes = [];
+    if (!answer.downvotes) answer.downvotes = [];
+
+    const hasDownvoted = answer.downvotes.includes(userId);
+    const hasUpvoted = answer.upvotes.includes(userId);
+
+    if (!hasDownvoted) {
+      answer.downvotes.push(userId);
+    }
+
+    if (hasUpvoted) {
+      answer.upvotes = answer.upvotes.filter(id => id.toString() !== userId);
+    }
+
+    await question.save();
+    res.json({ upvotes: answer.upvotes.length, downvotes: answer.downvotes.length });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to downvote answer' });
+  }
+};
 
 module.exports = {
   createQuestion,
     getHubQuestions,
     getUserQuestions,
     answerQuestion,
-    getQuestionById
+    getQuestionById,
+    upvoteQuestion,
+    downvoteQuestion,
+    upvoteAnswer,
+    downvoteAnswer
 };

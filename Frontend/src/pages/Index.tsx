@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import HubCard from '@/components/HubCard';
 import HighlightCard from '@/components/HighlightCard';
@@ -13,6 +13,7 @@ const Index = () => {
   const [yourHubs, setYourHubs] = useState([]);
   const [discoverHubs, setDiscoverHubs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const discoverRef = useRef<HTMLDivElement | null>(null);
 
   // Get current user ID from localStorage
   const token = localStorage.getItem("token");
@@ -50,36 +51,9 @@ const Index = () => {
     fetchAllHubs();
   }, []);
 
-  const highlights = [
-    {
-      title: 'Most Active Hub Today',
-      value: 'Code Crafters',
-      description: '156 users online',
-      icon: TrendingUp,
-      color: 'blue' as const
-    },
-    {
-      title: 'New Members This Week',
-      value: '2,847',
-      description: '+12% from last week',
-      icon: Users,
-      color: 'green' as const
-    },
-    {
-      title: 'Featured Creator',
-      value: '@alexartist',
-      description: 'Digital Art Studio',
-      icon: Star,
-      color: 'orange' as const
-    },
-    {
-      title: 'Weekly Challenge',
-      value: 'Draw Your Mood',
-      description: '247 submissions',
-      icon: Award,
-      color: 'purple' as const
-    }
-  ];
+  const filteredYourHubs = yourHubs.filter(
+  (hub) => !createdHubs.some((created) => created._id === hub._id)
+);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
@@ -101,12 +75,15 @@ const Index = () => {
           </p>
           
           <div className="flex justify-center gap-4">
-            <Link to="/explore">
-              <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-5 rounded-xl shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                <Search className="w-5 h-5 mr-2" />
-                Explore Hubs
-              </Button>
-            </Link>
+            <Button
+              onClick={() => {
+                discoverRef.current?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-5 rounded-xl shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+            >
+              <Search className="w-5 h-5 mr-2" />
+              Explore Hubs
+            </Button>
             <Link to="/create-hub">
               <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-5 rounded-xl shadow-lg transition-all duration-300 transform hover:-translate-y-1">
                 <Plus className="w-5 h-5 mr-2" />
@@ -182,9 +159,9 @@ const Index = () => {
             </Button>
           </div>
 
-          {yourHubs.length > 0 ? (
+          {filteredYourHubs.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {yourHubs.map((hub) => (
+              {filteredYourHubs.map((hub) => (
                 <div key={hub._id} className="transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
                   <HubCard
                     id={hub._id}
@@ -221,7 +198,7 @@ const Index = () => {
         </section>
 
         {/* Discover Hubs */}
-        <section className="mb-12">
+        <section ref={discoverRef} className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Discover New Hubs</h2>
@@ -234,11 +211,9 @@ const Index = () => {
           
           <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                🔥 Trending Now
-              </h3>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {discoverHubs.map((hub) => (
+                {discoverHubs.slice(0,4).map((hub) => (
                   <div key={hub._id} className="transition-all duration-300 hover:shadow-lg hover:scale-[1.01]">
                     <HubCard
                       id={hub._id}

@@ -129,10 +129,6 @@ const Navbar = () => {
                   Profile
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="focus:bg-gray-100 dark:focus:bg-gray-700 text-gray-700 dark:text-gray-200">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </DropdownMenuItem>
               <DropdownMenuSeparator className="dark:border-gray-700" />
               <DropdownMenuItem 
                 onClick={handleLogout} 

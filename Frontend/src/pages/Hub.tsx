@@ -94,6 +94,7 @@ const Hub = () => {
       });
       const questionsData = await questionsRes.json();
       setQuestions(questionsData);
+      console.log(questionsData);
     };
 
     if (hubData) fetchExtraData();
