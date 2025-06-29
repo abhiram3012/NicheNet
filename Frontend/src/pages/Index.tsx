@@ -56,21 +56,21 @@ const Index = () => {
 );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-950">
       <Navbar />
       
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Hero Section */}
         <div className="mb-10 text-center">
-          <div className="inline-flex items-center justify-center mb-4 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+          <div className="inline-flex items-center justify-center mb-4 px-4 py-2 bg-blue-900/30 rounded-full">
+            <span className="text-sm font-medium text-blue-300">
               Explore, Create, Connect
             </span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
             Welcome Back to Your Communities!
           </h1>
-          <p className="max-w-2xl mx-auto text-xl text-gray-600 dark:text-gray-300 mb-6">
+          <p className="max-w-2xl mx-auto text-xl text-gray-300 mb-6">
             Discover new passions and connect with like-minded creators
           </p>
           
@@ -97,8 +97,8 @@ const Index = () => {
         <section className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Hubs You Created</h2>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">Your communities, your rules</p>
+              <h2 className="text-2xl font-bold text-white">Hubs You Created</h2>
+              <p className="text-gray-400 mt-1">Your communities, your rules</p>
             </div>
             <Link to="/create-hub">
               <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 px-5 py-3 rounded-xl shadow-md">
@@ -129,12 +129,12 @@ const Index = () => {
               ))}
             </div>
           ) : (
-            <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-10 text-center shadow-sm">
-              <div className="w-24 h-24 bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Plus className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+            <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-2xl p-10 text-center shadow-sm">
+              <div className="w-24 h-24 bg-gradient-to-r from-blue-900/30 to-indigo-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Plus className="w-12 h-12 text-blue-400" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Create Your First Hub</h3>
-              <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto mb-6">
+              <h3 className="text-xl font-bold text-white mb-3">Create Your First Hub</h3>
+              <p className="text-gray-400 max-w-md mx-auto mb-6">
                 Build a community around your passions and connect with like-minded people.
               </p>
               <Link to="/create-hub">
@@ -151,10 +151,10 @@ const Index = () => {
         <section className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Your Communities</h2>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">Hubs you're part of</p>
+              <h2 className="text-2xl font-bold text-white">Your Communities</h2>
+              <p className="text-gray-400 mt-1">Hubs you're part of</p>
             </div>
-            <Button variant="outline" className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-5 py-3 rounded-xl">
+            <Button variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-800 px-5 py-3 rounded-xl">
               Manage All
             </Button>
           </div>
@@ -180,12 +180,12 @@ const Index = () => {
               ))}
             </div>
           ) : (
-            <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-10 text-center shadow-sm">
-              <div className="w-24 h-24 bg-gradient-to-r from-green-100 to-teal-100 dark:from-green-900/30 dark:to-teal-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Users className="w-12 h-12 text-green-600 dark:text-green-400" />
+            <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-2xl p-10 text-center shadow-sm">
+              <div className="w-24 h-24 bg-gradient-to-r from-green-900/30 to-teal-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Users className="w-12 h-12 text-green-400" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Join Your First Community</h3>
-              <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto mb-6">
+              <h3 className="text-xl font-bold text-white mb-3">Join Your First Community</h3>
+              <p className="text-gray-400 max-w-md mx-auto mb-6">
                 Discover hubs that match your interests and start collaborating with creators.
               </p>
               <Link to="/explore">
@@ -201,17 +201,16 @@ const Index = () => {
         <section ref={discoverRef} className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Discover New Hubs</h2>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">Trending communities you might like</p>
+              <h2 className="text-2xl font-bold text-white">Discover New Hubs</h2>
+              <p className="text-gray-400 mt-1">Trending communities you might like</p>
             </div>
-            <Button variant="ghost" className="text-blue-600 dark:text-blue-400">
+            <Button variant="ghost" className="text-blue-400">
               See all <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           </div>
           
-          <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
+          <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-2xl p-6 shadow-sm">
             <div className="mb-6">
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {discoverHubs.slice(0,4).map((hub) => (
                   <div key={hub._id} className="transition-all duration-300 hover:shadow-lg hover:scale-[1.01]">
@@ -236,7 +235,7 @@ const Index = () => {
             
             <div className="text-center pt-4">
               <Button 
-                className="bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 border border-dashed border-indigo-300 dark:border-indigo-700 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 px-8 py-6 rounded-xl transition-all duration-300 hover:shadow-md"
+                className="bg-gradient-to-r from-indigo-900/30 to-purple-900/30 border border-dashed border-indigo-700 text-indigo-300 hover:bg-indigo-900/50 px-8 py-6 rounded-xl transition-all duration-300 hover:shadow-md"
               >
                 🎲 Explore Random Hub
               </Button>

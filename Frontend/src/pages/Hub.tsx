@@ -33,8 +33,8 @@ interface Hub {
   bannerUrl?: string;
   moderators?: string[];
   rules?: string[];
-  announcements?: Announcement[]; // ✅ new
-  discord?: string;        // ✅ new
+  announcements?: Announcement[];
+  discord?: string;
   topContributors?: { username: string; posts: number }[];
   isCreator?: boolean;
   isJoined?: boolean;
@@ -94,52 +94,48 @@ const Hub = () => {
       });
       const questionsData = await questionsRes.json();
       setQuestions(questionsData);
-      console.log(questionsData);
     };
 
     if (hubData) fetchExtraData();
   }, [hubId, hubData]);
 
-useEffect(() => {
-  const fetchHubData = async () => {
-    try {
-      const res = await fetch(`http://localhost:5000/api/hubs/${hubId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-      const data = await res.json();
-      const currentUserId = getCurrentUserId();
-      console.log('Hub data:', data);
+  useEffect(() => {
+    const fetchHubData = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/hubs/${hubId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
+        const data = await res.json();
+        const currentUserId = getCurrentUserId();
 
-      // Check and redirect before setting state
-      if (data.isPrivate && data.status !== 'joined') {
-        console.log('Redirecting to join request page');
-        navigate(`/hub/${hubId}/join-request`);
-        return;
+        if (data.isPrivate && data.status !== 'joined') {
+          navigate(`/hub/${hubId}/join-request`);
+          return;
+        }
+
+        const updatedHub: Hub = {
+          ...data,
+          memberCount: data.members.length,
+          isCreator: data.creator === currentUserId,
+          isJoined: data.status === 'joined',
+        };
+
+        setHubData(updatedHub);
+
+        const postsRes = await fetch(`http://localhost:5000/api/posts/hub/${hubId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
+        const postsData = await postsRes.json();
+        setPosts(postsData);
+      } catch (error) {
+        console.error('Error fetching hub or posts:', error);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const updatedHub: Hub = {
-        ...data,
-        memberCount: data.members.length,
-        isCreator: data.creator === currentUserId,
-        isJoined: data.status === 'joined',
-      };
-
-      setHubData(updatedHub);
-
-      const postsRes = await fetch(`http://localhost:5000/api/posts/hub/${hubId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-      const postsData = await postsRes.json();
-      setPosts(postsData);
-    } catch (error) {
-      console.error('Error fetching hub or posts:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchHubData();
-}, [hubId, navigate]);
+    fetchHubData();
+  }, [hubId, navigate]);
 
   const handleVote = async (pollId: string, optionText: string) => {
     try {
@@ -202,42 +198,40 @@ useEffect(() => {
     fetchQuestions();
   }, [hubId]);
 
-  if (loading || !hubData) return <div className="p-10 text-center text-gray-600 dark:text-gray-400">Loading Hub...</div>;
-
+  if (loading || !hubData) return <div className="p-10 text-center text-gray-400">Loading Hub...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-900">
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 py-6">
         <HubHeader hubData={hubData} />
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
-          {/* Main Content */}
           <div className="lg:col-span-3">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-6 bg-gray-100 dark:bg-gray-800">
+              <TabsList className="grid w-full grid-cols-4 mb-6 bg-gray-800">
                 <TabsTrigger 
                   value="posts"
-                  className="data-[state=active]:bg-white data-[state=active]:text-blue-600 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400"
+                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-blue-400"
                 >
                   Posts
                 </TabsTrigger>
                 <TabsTrigger 
                   value="polls"
-                  className="data-[state=active]:bg-white data-[state=active]:text-blue-600 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400"
+                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-blue-400"
                 >
                   Polls
                 </TabsTrigger>
                 <TabsTrigger 
                   value="questions"
-                  className="data-[state=active]:bg-white data-[state=active]:text-blue-600 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400"
+                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-blue-400"
                 >
                   Questions
                 </TabsTrigger>
                 <TabsTrigger 
                   value="my-activity"
-                  className="data-[state=active]:bg-white data-[state=active]:text-blue-600 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400"
+                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-blue-400"
                 >
                   My Activity
                 </TabsTrigger>
@@ -260,7 +254,7 @@ useEffect(() => {
               <TabsContent value="polls" className="space-y-4">
                 <div className="mb-4">
                   <Link to={`/hub/${hubId}/create-poll`}>
-                    <Button className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600">
+                    <Button className="bg-blue-700 hover:bg-blue-600">
                       <BarChart3 className="w-4 h-4 mr-2" />
                       Create New Poll
                     </Button>
@@ -275,15 +269,15 @@ useEffect(() => {
                   />
                 ) : (
                 polls.map((poll) => (
-                  <Card key={poll.pollId} className="bg-white dark:bg-gray-800 border dark:border-gray-700">
+                  <Card key={poll.pollId} className="bg-gray-800 border-gray-700">
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <div>
-                          <CardTitle className="text-lg dark:text-white">{poll.title}</CardTitle>
-                          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
+                          <CardTitle className="text-lg text-white">{poll.title}</CardTitle>
+                          <div className="flex items-center gap-2 text-sm text-gray-400 mt-1">
                             <span>by {poll.author}</span>
                             {poll.isCreator && (
-                              <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 text-xs">
+                              <Badge className="bg-yellow-900/30 text-yellow-300 text-xs">
                                 Creator
                               </Badge>
                             )}
@@ -291,7 +285,7 @@ useEffect(() => {
                             <span>{timeAgo(poll.createdAt)}</span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                        <div className="flex items-center gap-2 text-sm text-gray-400">
                           <BarChart3 className="w-4 h-4" />
                           {poll.totalVotes} votes
                         </div>
@@ -306,22 +300,22 @@ useEffect(() => {
                                 variant={poll.hasVoted && poll.userVote === option.text ? "default" : "outline"}
                                 className={`flex-1 justify-start ${
                                   poll.hasVoted && poll.userVote === option.text 
-                                    ? "dark:bg-blue-700 dark:hover:bg-blue-600" 
-                                    : "dark:border-gray-600 dark:hover:bg-gray-700"
+                                    ? "bg-blue-700 hover:bg-blue-600" 
+                                    : "border-gray-600 hover:bg-gray-700"
                                 }`}
                                 onClick={() => handleVote(poll.pollId, option.text)}
                                 disabled={poll.hasVoted}
                               >
                                 {option.text}
                               </Button>
-                              <span className="text-sm text-gray-500 dark:text-gray-400 ml-3">
+                              <span className="text-sm text-gray-400 ml-3">
                                 {option.percentage}%
                               </span>
                             </div>
                             {poll.hasVoted && (
-                              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                              <div className="w-full bg-gray-700 rounded-full h-2">
                                 <div 
-                                  className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-300"
+                                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
                                   style={{ width: `${option.percentage}%` }}
                                 ></div>
                               </div>
@@ -337,7 +331,7 @@ useEffect(() => {
               <TabsContent value="questions" className="space-y-4">
                 <div className="mb-4">
                    <AskQuestionDialog>
-                    <Button className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600">
+                    <Button className="bg-purple-700 hover:bg-purple-600">
                       <HelpCircle className="w-4 h-4 mr-2" />
                       Ask a Question
                     </Button>
@@ -357,26 +351,23 @@ useEffect(() => {
                 )}
               </TabsContent>
 
-
               <TabsContent value="my-activity" className="space-y-4">
                 {(userPosts.length > 0 || userPolls.length > 0 || userQuestions.length > 0) ? (
                   <div className="space-y-4">
-                    {/* User's Posts */}
                     {userPosts.map((post) => (
                       <PostCard key={`post-${post._id}`} post={post} />
                     ))}
                     
-                    {/* User's Polls */}
                     {userPolls.map((poll) => (
-                        <Card key={poll.pollId} className="bg-white dark:bg-gray-800 border dark:border-gray-700">
+                        <Card key={poll.pollId} className="bg-gray-800 border-gray-700">
                           <CardHeader>
                             <div className="flex items-center justify-between">
                               <div>
-                                <CardTitle className="text-lg dark:text-white">{poll.title}</CardTitle>
-                                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                <CardTitle className="text-lg text-white">{poll.title}</CardTitle>
+                                <div className="flex items-center gap-2 text-sm text-gray-400 mt-1">
                                   <span>by you</span>
                                   {poll.isCreator && (
-                                    <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 text-xs">
+                                    <Badge className="bg-yellow-900/30 text-yellow-300 text-xs">
                                       Creator
                                     </Badge>
                                   )}
@@ -384,7 +375,7 @@ useEffect(() => {
                                   <span>{timeAgo(poll.createdAt)}</span>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                              <div className="flex items-center gap-2 text-sm text-gray-400">
                                 <BarChart3 className="w-4 h-4" />
                                 {poll.totalVotes} votes
                               </div>
@@ -399,22 +390,22 @@ useEffect(() => {
                                       variant={poll.hasVoted && poll.userVote === option.text ? "default" : "outline"}
                                       className={`flex-1 justify-start ${
                                         poll.hasVoted && poll.userVote === option.text 
-                                          ? "dark:bg-blue-700 dark:hover:bg-blue-600" 
-                                          : "dark:border-gray-600 dark:hover:bg-gray-700"
+                                          ? "bg-blue-700 hover:bg-blue-600" 
+                                          : "border-gray-600 hover:bg-gray-700"
                                       }`}
                                       onClick={() => handleVote(poll.pollId, option.text)}
                                       disabled={poll.hasVoted}
                                     >
                                       {option.text}
                                     </Button>
-                                    <span className="text-sm text-gray-500 dark:text-gray-400 ml-3">
+                                    <span className="text-sm text-gray-400 ml-3">
                                       {option.percentage}%
                                     </span>
                                   </div>
                                   {poll.hasVoted && (
-                                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                    <div className="w-full bg-gray-700 rounded-full h-2">
                                       <div 
-                                        className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-300"
+                                        className="bg-blue-500 h-2 rounded-full transition-all duration-300"
                                         style={{ width: `${option.percentage}%` }}
                                       ></div>
                                     </div>
@@ -426,34 +417,29 @@ useEffect(() => {
                         </Card>
                       ))}
                     
-                    {/* User's Questions */}
                     {userQuestions.map((question) => (
                       <QuestionCard key={question.id} question={question} />
                     ))}
                   </div>
                 ) : (
-                  <Card className="bg-white dark:bg-gray-800 border dark:border-gray-700">
+                  <Card className="bg-gray-800 border-gray-700">
                     <CardContent className="p-8 text-center">
-                      <Users className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-600 dark:text-gray-300 mb-2">No activity yet</h3>
-                      <p className="text-gray-500 dark:text-gray-400 mb-4">You haven't created any posts, polls, or questions in this hub yet.</p>
-                      <Button className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600">
+                      <Users className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-300 mb-2">No activity yet</h3>
+                      <p className="text-gray-400 mb-4">You haven't created any posts, polls, or questions in this hub yet.</p>
+                      <Button className="bg-green-700 hover:bg-green-600">
                         Start Contributing
                       </Button>
                     </CardContent>
                   </Card>
                 )}
               </TabsContent>
-
             </Tabs>
           </div>
 
-          {/* Sidebar */}
           <div className="lg:col-span-1">
-          <HubSidebar 
-            hubData={hubData}
-          />
-        </div>
+            <HubSidebar hubData={hubData} />
+          </div>
         </div>
       </main>
     </div>

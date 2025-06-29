@@ -4,9 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Calendar, Star, Moon, Sun, User, Lock, Pencil, Users, PlusCircle, Check, X } from 'lucide-react';
+import { Calendar, Star, User, Lock, Pencil, Users, PlusCircle, Check, X } from 'lucide-react';
 
 interface Hub {
   _id: string;
@@ -27,7 +26,6 @@ interface UserData {
 }
 
 const Profile = () => {
-  const [isDarkMode, setIsDarkMode] = React.useState(false);
   const [userData, setUserData] = React.useState<UserData | null>(null);
   const [newUsername, setNewUsername] = React.useState('');
   const [newBio, setNewBio] = React.useState('');
@@ -38,19 +36,6 @@ const Profile = () => {
   const [bioStatus, setBioStatus] = React.useState<{success: boolean, message: string} | null>(null);
   const [passwordStatus, setPasswordStatus] = React.useState<{success: boolean, message: string} | null>(null);
   const [isUpdating, setIsUpdating] = React.useState({username: false, bio: false, password: false});
-
-  React.useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-      setIsDarkMode(true);
-      document.documentElement.classList.add('dark');
-    } else {
-      setIsDarkMode(false);
-      document.documentElement.classList.remove('dark');
-    }
-  }, []);
 
   React.useEffect(() => {
     const fetchUser = async () => {
@@ -70,13 +55,6 @@ const Profile = () => {
     };
     fetchUser();
   }, []);
-
-  const toggleDarkMode = () => {
-    const newDark = !isDarkMode;
-    setIsDarkMode(newDark);
-    document.documentElement.classList.toggle('dark', newDark);
-    localStorage.setItem('theme', newDark ? 'dark' : 'light');
-  };
 
   const formatJoinDate = (date: string) =>
     new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
@@ -178,22 +156,22 @@ const Profile = () => {
 
   if (!userData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <Navbar />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <h1 className="text-3xl font-bold mb-8 text-foreground">Profile & Settings</h1>
+        <h1 className="text-3xl font-bold mb-8">Profile & Settings</h1>
 
         {/* Profile Section */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-foreground">
+            <CardTitle className="flex items-center gap-2">
               <User className="w-5 h-5" />
               Profile
             </CardTitle>
@@ -202,7 +180,7 @@ const Profile = () => {
           <CardContent>
             <div className="flex flex-col md:flex-row gap-6 items-start">
               <div className="flex flex-col items-center">
-                <Avatar className="w-20 h-20 border-2 border-gray-200 dark:border-gray-700">
+                <Avatar className="w-20 h-20 border-2 border-gray-200">
                   <AvatarImage src={userData.avatar} alt={userData.username} />
                   <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xl font-bold">
                     {userData.username.charAt(0).toUpperCase()}
@@ -216,7 +194,7 @@ const Profile = () => {
               
               <div className="flex-1 space-y-4 w-full">
                 <div>
-                  <h2 className="text-2xl font-bold text-foreground">{userData.username}</h2>
+                  <h2 className="text-2xl font-bold">{userData.username}</h2>
                   <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
@@ -226,10 +204,10 @@ const Profile = () => {
                 </div>
                 
                 <div className="space-y-3">
-                  <h3 className="font-medium text-foreground">About</h3>
+                  <h3 className="font-medium">About</h3>
                   <div className="relative">
                     <textarea
-                      className="w-full border rounded-lg p-3 text-sm bg-card text-foreground border-input focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full bg-gray-800 border border-gray-700 text-gray-200 rounded-lg p-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       rows={3}
                       value={newBio}
                       onChange={(e) => setNewBio(e.target.value)}
@@ -268,7 +246,7 @@ const Profile = () => {
         {/* Hubs Created */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-foreground">
+            <CardTitle className="flex items-center gap-2">
               <PlusCircle className="w-5 h-5" />
               Hubs Created
             </CardTitle>
@@ -281,7 +259,7 @@ const Profile = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {userData.createdHubs.map((hub) => (
                   <div key={hub._id} className="border rounded-lg p-4 hover:bg-accent transition-colors group">
-                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{hub.name}</h3>
+                    <h3 className="font-semibold group-hover:text-primary transition-colors">{hub.name}</h3>
                     <p className="text-sm text-muted-foreground mt-1">{hub.description}</p>
                     <div className="flex gap-4 mt-3 text-xs text-muted-foreground">
                       <span>{hub.memberCount.toLocaleString()} members</span>
@@ -297,7 +275,7 @@ const Profile = () => {
         {/* Hubs Joined */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-foreground">
+            <CardTitle className="flex items-center gap-2">
               <Users className="w-5 h-5" />
               Hubs Joined
             </CardTitle>
@@ -310,7 +288,7 @@ const Profile = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {userData.joinedHubs.map((hub) => (
                   <div key={hub._id} className="border rounded-lg p-4 hover:bg-accent transition-colors group">
-                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{hub.name}</h3>
+                    <h3 className="font-semibold group-hover:text-primary transition-colors">{hub.name}</h3>
                     <p className="text-sm text-muted-foreground mt-1">{hub.description}</p>
                     <div className="mt-3 text-xs text-muted-foreground">
                       {hub.memberCount.toLocaleString()} members
@@ -325,7 +303,7 @@ const Profile = () => {
         {/* Username Settings */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-foreground">
+            <CardTitle className="flex items-center gap-2">
               <Pencil className="w-5 h-5" />
               Change Username
             </CardTitle>
@@ -333,13 +311,12 @@ const Profile = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="new-username" className="text-foreground">New Username</Label>
+              <Label htmlFor="new-username">New Username</Label>
               <Input
                 id="new-username"
                 placeholder="Enter new username"
                 value={newUsername}
                 onChange={(e) => setNewUsername(e.target.value)}
-                className="bg-card"
               />
             </div>
             
@@ -369,7 +346,7 @@ const Profile = () => {
         {/* Password Settings */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-foreground">
+            <CardTitle className="flex items-center gap-2">
               <Lock className="w-5 h-5" />
               Change Password
             </CardTitle>
@@ -377,33 +354,30 @@ const Profile = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="current-password" className="text-foreground">Current Password</Label>
+              <Label htmlFor="current-password">Current Password</Label>
               <Input
                 id="current-password"
                 type="password"
                 value={passwordData.current}
                 onChange={(e) => setPasswordData({ ...passwordData, current: e.target.value })}
-                className="bg-card"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-password" className="text-foreground">New Password</Label>
+              <Label htmlFor="new-password">New Password</Label>
               <Input
                 id="new-password"
                 type="password"
                 value={passwordData.new}
                 onChange={(e) => setPasswordData({ ...passwordData, new: e.target.value })}
-                className="bg-card"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirm-password" className="text-foreground">Confirm New Password</Label>
+              <Label htmlFor="confirm-password">Confirm New Password</Label>
               <Input
                 id="confirm-password"
                 type="password"
                 value={passwordData.confirm}
                 onChange={(e) => setPasswordData({ ...passwordData, confirm: e.target.value })}
-                className="bg-card"
               />
             </div>
             
@@ -427,26 +401,6 @@ const Profile = () => {
                 </span>
               )}
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Appearance */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-foreground">
-              {isDarkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-              Appearance
-            </CardTitle>
-            <CardDescription>Customize your theme preference</CardDescription>
-          </CardHeader>
-          <CardContent className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="dark-mode" className="text-base font-medium text-foreground">
-                Dark Mode
-              </Label>
-              <p className="text-sm text-muted-foreground">Toggle between light and dark mode</p>
-            </div>
-            <Switch id="dark-mode" checked={isDarkMode} onCheckedChange={toggleDarkMode} />
           </CardContent>
         </Card>
       </div>
