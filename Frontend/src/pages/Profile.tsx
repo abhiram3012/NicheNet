@@ -156,37 +156,37 @@ const Profile = () => {
 
   if (!userData) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-900 text-gray-100">
       <Navbar />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <h1 className="text-3xl font-bold mb-8">Profile & Settings</h1>
 
         {/* Profile Section */}
-        <Card className="mb-6">
+        <Card className="mb-6 bg-gray-800 border-gray-700">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="w-5 h-5" />
               Profile
             </CardTitle>
-            <CardDescription>Your profile information and account details</CardDescription>
+            <CardDescription className="text-gray-400">Your profile information and account details</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col md:flex-row gap-6 items-start">
               <div className="flex flex-col items-center">
-                <Avatar className="w-20 h-20 border-2 border-gray-200">
+                <Avatar className="w-20 h-20 border-2 border-gray-600">
                   <AvatarImage src={userData.avatar} alt={userData.username} />
                   <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xl font-bold">
                     {userData.username.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <div className="mt-3 flex items-center gap-1 text-sm text-muted-foreground">
+                <div className="mt-3 flex items-center gap-1 text-sm text-gray-400">
                   <Star className="w-4 h-4" />
                   <span>{userData.karma.toLocaleString()} Karma</span>
                 </div>
@@ -195,7 +195,7 @@ const Profile = () => {
               <div className="flex-1 space-y-4 w-full">
                 <div>
                   <h2 className="text-2xl font-bold">{userData.username}</h2>
-                  <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-4 mt-1 text-sm text-gray-400">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
                       Joined {formatJoinDate(userData.createdAt)}
@@ -207,7 +207,7 @@ const Profile = () => {
                   <h3 className="font-medium">About</h3>
                   <div className="relative">
                     <textarea
-                      className="w-full bg-gray-800 border border-gray-700 text-gray-200 rounded-lg p-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full bg-gray-700 border border-gray-600 text-gray-200 rounded-lg p-3 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       rows={3}
                       value={newBio}
                       onChange={(e) => setNewBio(e.target.value)}
@@ -216,7 +216,7 @@ const Profile = () => {
                     <div className="flex justify-between mt-2">
                       <div className="flex items-center">
                         {bioStatus && (
-                          <span className={`flex items-center text-sm ${bioStatus.success ? 'text-green-500' : 'text-destructive'}`}>
+                          <span className={`flex items-center text-sm ${bioStatus.success ? 'text-green-400' : 'text-red-400'}`}>
                             {bioStatus.success ? <Check className="w-4 h-4 mr-1" /> : <X className="w-4 h-4 mr-1" />}
                             {bioStatus.message}
                           </span>
@@ -226,7 +226,7 @@ const Profile = () => {
                         onClick={handleBioUpdate}
                         disabled={isUpdating.bio}
                         size="sm"
-                        className="ml-auto"
+                        className="ml-auto bg-purple-600 hover:bg-purple-700"
                       >
                         {isUpdating.bio ? (
                           <span className="flex items-center">
@@ -244,24 +244,24 @@ const Profile = () => {
         </Card>
 
         {/* Hubs Created */}
-        <Card className="mb-6">
+        <Card className="mb-6 bg-gray-800 border-gray-700">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <PlusCircle className="w-5 h-5" />
               Hubs Created
             </CardTitle>
-            <CardDescription>Communities you've created and manage</CardDescription>
+            <CardDescription className="text-gray-400">Communities you've created and manage</CardDescription>
           </CardHeader>
           <CardContent>
             {userData.createdHubs.length === 0 ? (
-              <p className="text-muted-foreground italic py-4">You haven't created any hubs yet</p>
+              <p className="text-gray-500 italic py-4">You haven't created any hubs yet</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {userData.createdHubs.map((hub) => (
-                  <div key={hub._id} className="border rounded-lg p-4 hover:bg-accent transition-colors group">
-                    <h3 className="font-semibold group-hover:text-primary transition-colors">{hub.name}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{hub.description}</p>
-                    <div className="flex gap-4 mt-3 text-xs text-muted-foreground">
+                  <div key={hub._id} className="border border-gray-700 rounded-lg p-4 hover:bg-gray-700 transition-colors group">
+                    <h3 className="font-semibold group-hover:text-purple-400 transition-colors">{hub.name}</h3>
+                    <p className="text-sm text-gray-400 mt-1">{hub.description}</p>
+                    <div className="flex gap-4 mt-3 text-xs text-gray-500">
                       <span>{hub.memberCount.toLocaleString()} members</span>
                       <span>{hub.postCount || 0} posts</span>
                     </div>
@@ -273,24 +273,24 @@ const Profile = () => {
         </Card>
 
         {/* Hubs Joined */}
-        <Card className="mb-6">
+        <Card className="mb-6 bg-gray-800 border-gray-700">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="w-5 h-5" />
               Hubs Joined
             </CardTitle>
-            <CardDescription>Communities you're participating in</CardDescription>
+            <CardDescription className="text-gray-400">Communities you're participating in</CardDescription>
           </CardHeader>
           <CardContent>
             {userData.joinedHubs.length === 0 ? (
-              <p className="text-muted-foreground italic py-4">You haven't joined any hubs yet</p>
+              <p className="text-gray-500 italic py-4">You haven't joined any hubs yet</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {userData.joinedHubs.map((hub) => (
-                  <div key={hub._id} className="border rounded-lg p-4 hover:bg-accent transition-colors group">
-                    <h3 className="font-semibold group-hover:text-primary transition-colors">{hub.name}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{hub.description}</p>
-                    <div className="mt-3 text-xs text-muted-foreground">
+                  <div key={hub._id} className="border border-gray-700 rounded-lg p-4 hover:bg-gray-700 transition-colors group">
+                    <h3 className="font-semibold group-hover:text-purple-400 transition-colors">{hub.name}</h3>
+                    <p className="text-sm text-gray-400 mt-1">{hub.description}</p>
+                    <div className="mt-3 text-xs text-gray-500">
                       {hub.memberCount.toLocaleString()} members
                     </div>
                   </div>
@@ -301,19 +301,20 @@ const Profile = () => {
         </Card>
 
         {/* Username Settings */}
-        <Card className="mb-6">
+        <Card className="mb-6 bg-gray-800 border-gray-700">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Pencil className="w-5 h-5" />
               Change Username
             </CardTitle>
-            <CardDescription>Update your display name</CardDescription>
+            <CardDescription className="text-gray-400">Update your display name</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="new-username">New Username</Label>
+              <Label htmlFor="new-username" className="text-gray-300">New Username</Label>
               <Input
                 id="new-username"
+                className="bg-gray-700 border-gray-600 text-white focus:ring-purple-500"
                 placeholder="Enter new username"
                 value={newUsername}
                 onChange={(e) => setNewUsername(e.target.value)}
@@ -324,6 +325,7 @@ const Profile = () => {
               <Button 
                 onClick={handleUsernameChange}
                 disabled={isUpdating.username}
+                className="bg-purple-600 hover:bg-purple-700"
               >
                 {isUpdating.username ? (
                   <span className="flex items-center">
@@ -334,7 +336,7 @@ const Profile = () => {
               </Button>
               
               {usernameStatus && (
-                <span className={`ml-4 flex items-center text-sm ${usernameStatus.success ? 'text-green-500' : 'text-destructive'}`}>
+                <span className={`ml-4 flex items-center text-sm ${usernameStatus.success ? 'text-green-400' : 'text-red-400'}`}>
                   {usernameStatus.success ? <Check className="w-4 h-4 mr-1" /> : <X className="w-4 h-4 mr-1" />}
                   {usernameStatus.message}
                 </span>
@@ -344,38 +346,41 @@ const Profile = () => {
         </Card>
 
         {/* Password Settings */}
-        <Card className="mb-6">
+        <Card className="mb-6 bg-gray-800 border-gray-700">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Lock className="w-5 h-5" />
               Change Password
             </CardTitle>
-            <CardDescription>Secure your account with a new password</CardDescription>
+            <CardDescription className="text-gray-400">Secure your account with a new password</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="current-password">Current Password</Label>
+              <Label htmlFor="current-password" className="text-gray-300">Current Password</Label>
               <Input
                 id="current-password"
                 type="password"
+                className="bg-gray-700 border-gray-600 text-white focus:ring-purple-500"
                 value={passwordData.current}
                 onChange={(e) => setPasswordData({ ...passwordData, current: e.target.value })}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-password">New Password</Label>
+              <Label htmlFor="new-password" className="text-gray-300">New Password</Label>
               <Input
                 id="new-password"
                 type="password"
+                className="bg-gray-700 border-gray-600 text-white focus:ring-purple-500"
                 value={passwordData.new}
                 onChange={(e) => setPasswordData({ ...passwordData, new: e.target.value })}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm New Password</Label>
+              <Label htmlFor="confirm-password" className="text-gray-300">Confirm New Password</Label>
               <Input
                 id="confirm-password"
                 type="password"
+                className="bg-gray-700 border-gray-600 text-white focus:ring-purple-500"
                 value={passwordData.confirm}
                 onChange={(e) => setPasswordData({ ...passwordData, confirm: e.target.value })}
               />
@@ -385,6 +390,7 @@ const Profile = () => {
               <Button 
                 onClick={handlePasswordChange}
                 disabled={isUpdating.password}
+                className="bg-purple-600 hover:bg-purple-700"
               >
                 {isUpdating.password ? (
                   <span className="flex items-center">
@@ -395,7 +401,7 @@ const Profile = () => {
               </Button>
               
               {passwordStatus && (
-                <span className={`ml-4 flex items-center text-sm ${passwordStatus.success ? 'text-green-500' : 'text-destructive'}`}>
+                <span className={`ml-4 flex items-center text-sm ${passwordStatus.success ? 'text-green-400' : 'text-red-400'}`}>
                   {passwordStatus.success ? <Check className="w-4 h-4 mr-1" /> : <X className="w-4 h-4 mr-1" />}
                   {passwordStatus.message}
                 </span>
@@ -409,4 +415,3 @@ const Profile = () => {
 };
 
 export default Profile;
-
