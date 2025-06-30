@@ -1,4 +1,4 @@
-require('dotenv').config(); // ⬅️ ✅ FIRST LINE
+require('dotenv').config(); // ✅ FIRST LINE
 
 const express = require('express');
 const path = require('path');
@@ -19,7 +19,7 @@ connectDB();
 app.use(express.json());
 
 app.use(cors({
-  origin: 'http://localhost:8080', // update if frontend domain changes
+  origin: ['https://nichenet-frontend.onrender.com', 'http://localhost:8080'],
   credentials: true,
 }));
 
