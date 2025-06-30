@@ -32,7 +32,7 @@ const AskQuestionDialog: React.FC<AskQuestionDialogProps> = ({ children, onQuest
         return;
       }
 
-      const response = await fetch(`http://localhost:5000/api/questions/hub/${hubId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/questions/hub/${hubId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

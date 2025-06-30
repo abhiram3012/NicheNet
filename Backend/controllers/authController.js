@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const Hub = require('../models/hub'); // Assuming you have a Hub model
+const Hub = require('../models/Hub'); // Assuming you have a Hub model
 
 // Generate JWT
 const generateToken = (user) => {

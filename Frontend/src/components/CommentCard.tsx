@@ -14,7 +14,7 @@ const CommentCard = ({ comment, postId, onReplySubmit }) => {
     if (!replyContent.trim()) return;
     try {
       await axios.post(
-        `http://localhost:5000/api/comments/`,
+        `${import.meta.env.VITE_API_URL}/api/comments/`,
         {
           postId,
           content: replyContent,

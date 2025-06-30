@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { MessageSquare, Crown } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import AnswerQuestionDialog from '@/components/AnswerQuestionDialog';
+import { timeAgo } from '@/utils/timeAgo';
 
 interface Answer {
   id: string;
@@ -33,7 +34,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
 
   const fetchAnswers = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/questions/${question.id}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/questions/${question.id}`);
       if (!res.ok) throw new Error("Failed to fetch answers");
       const data = await res.json();
       setAllAnswers(data.answers);
@@ -46,9 +47,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
 
   return (
     <Card
-      className={`bg-gray-800 hover:shadow-md transition-shadow border border-gray-700 ${
-        question.isCreator ? 'ring-2 ring-yellow-500/60 border-yellow-500/50' : ''
-      }`}
+      className={`bg-gray-800 hover:shadow-md transition-shadow border border-gray-700`}
     >
       <CardHeader>
         <div className="flex items-center justify-between">
@@ -56,21 +55,13 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
             <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
               <div className="flex items-center gap-2">
                 <span
-                  className={`font-medium ${
-                    question.isCreator ? 'text-yellow-400' : 'text-gray-200'
-                  }`}
+                  className={`font-medium text-gray-200`}
                 >
                   {question.author}
                 </span>
-                {question.isCreator && (
-                  <Badge className="bg-yellow-900/30 text-yellow-300 text-xs px-2 py-1 flex items-center gap-1">
-                    <Crown className="w-3 h-3" />
-                    Creator
-                  </Badge>
-                )}
               </div>
               <span>•</span>
-              <span>{question.timePosted}</span>
+              <span>{timeAgo(question.timePosted)}</span>
             </div>
             <Link to={`/hub/${hubId}/question/${question.id}`}>
               <CardTitle className="text-lg text-white hover:text-purple-400 cursor-pointer">

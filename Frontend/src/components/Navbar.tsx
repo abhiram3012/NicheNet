@@ -13,12 +13,34 @@ import {
 import { toast } from 'sonner';
 import axios from 'axios';
 import NicheNetLogo from './NicheNetLogo';
+import { decodeJWT } from '@/utils/decodeJWT';
 
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  // Get user ID (existing)
+  const getCurrentUserId = (): string | null => {
+    const token = localStorage.getItem("token");
+    const decoded = token ? decodeJWT(token) : null;
+    const currentUserId = decoded?._id || decoded?.id;
+    return currentUserId || null;
+  };
+
+  // Get username (new)
+  const getCurrentUsername = (): string | null => {
+    const token = localStorage.getItem("token");
+    const decoded = token ? decodeJWT(token) : null;
+    return decoded?.username || null; // Adjust this key if your JWT uses a different field
+  };
+
+  useEffect(() => {
+    const uname = getCurrentUsername();
+    setUsername(uname);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -36,7 +58,7 @@ const Navbar = () => {
         }
 
         try {
-          const res = await axios.get(`http://localhost:5000/api/hubs/search?query=${searchQuery}`);
+          const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/hubs/search?query=${searchQuery}`);
           setSearchResults(res.data);
           setShowDropdown(true);
         } catch (error) {
@@ -50,7 +72,7 @@ const Navbar = () => {
     return () => clearTimeout(delayDebounce);
   }, [searchQuery]);
 
-  const handleResultClick = (hubId) => {
+  const handleResultClick = (hubId: string) => {
     navigate(`/hub/${hubId}`);
     setSearchQuery('');
     setSearchResults([]);
@@ -63,7 +85,7 @@ const Navbar = () => {
         {/* Logo */}
         <Link to="/dashboard" className="flex items-center space-x-2">
           <NicheNetLogo width={36} height={36} />
-          <span className="text-xl font-bold bg-gradient-to-r from-pink-500 to-orange-500 bg-clip-text text-transparent">
+          <span className="text-xl font-bold bg-gradient-to-r from-[#6A11CB] to-[#2575FC] bg-clip-text text-transparent">
             NicheNet
           </span>
         </Link>
@@ -113,8 +135,8 @@ const Navbar = () => {
                 size="sm" 
                 className="rounded-full p-1 hover:bg-gray-800"
               >
-                <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white font-medium uppercase">
+                  {username ? username[0] : <User className="w-4 h-4 text-white" />}
                 </div>
               </Button>
             </DropdownMenuTrigger>

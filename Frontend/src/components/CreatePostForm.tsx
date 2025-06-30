@@ -46,13 +46,6 @@ const CreatePostForm = () => {
     }
   };
 
-  const handleAnonymousToggle = (checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      isAnonymous: checked
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -74,13 +67,12 @@ const CreatePostForm = () => {
       form.append("title", formData.title);
       form.append("content", formData.content);
       form.append("hubId", hubId!);
-      form.append("isAnonymous", String(formData.isAnonymous));
 
       if (formData.image) {
         form.append("image", formData.image);
       }
 
-      const response = await fetch("http://localhost:5000/api/posts/create", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/posts/create`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -203,17 +195,6 @@ const CreatePostForm = () => {
                     </div>
                   )}
                 </div>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="anonymous"
-                  checked={formData.isAnonymous}
-                  onCheckedChange={handleAnonymousToggle}
-                />
-                <Label htmlFor="anonymous" className="text-sm font-medium text-gray-300">
-                  Post anonymously
-                </Label>
               </div>
 
               <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">

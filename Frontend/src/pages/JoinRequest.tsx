@@ -9,19 +9,17 @@ import axios from 'axios';
 import { decodeJWT } from '@/utils/decodeJWT';
 
 interface Hub {
-  id: string;
+  _id: string;
   name: string;
   description: string;
   creator: string;
+  members:string[];
   memberCount: number;
   bannerUrl?: string;
-  moderators?: string[];
   rules?: string[];
-  topContributors?: { username: string; posts: number }[];
   isCreator?: boolean;
-  isJoined?: boolean;
   pendingRequests?: string[];
-  hasRequested?: boolean;
+  status?: string;
   isPrivate?: boolean;
 }
 
@@ -49,20 +47,23 @@ const JoinRequest = () => {
 
     const fetchHub = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/hubs/${hubId}`, { headers });
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/hubs/${hubId}`, { headers });
         const data = res.data;
         const currentUserId = getCurrentUserId();
-
         const updatedHub: Hub = {
           ...data,
           memberCount: data.members.length,
           isCreator: data.creator === currentUserId,
-          isJoined: data.members.some((m) => m._id === currentUserId),
-          hasRequested: data.pendingRequests.includes(currentUserId),
           isPrivate: data.isPrivate,
-        };
+        };  
+        if(updatedHub.status==="joined"){
+          navigate(`/hub/${hubData._id}`)
+        }
+
+        console.log("updated hub",updatedHub);
 
         setHubData(updatedHub);
+        console.log(hubData);
       } catch (err) {
         toast({
           title: "Error loading hub",
@@ -82,7 +83,7 @@ const JoinRequest = () => {
   const handleSendRequest = async () => {
     setIsSubmitting(true);
     try {
-      await axios.post(`http://localhost:5000/api/hubs/${hubId}/request`, {}, { headers });
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/hubs/${hubId}/request`, {}, { headers });
       toast({
         title: "Join request sent!",
         description: "You'll be notified once it's reviewed by the moderators.",
@@ -125,7 +126,7 @@ const JoinRequest = () => {
           <div 
             className="h-32 sm:h-48 md:h-56 bg-cover bg-center bg-gray-700"
             style={{
-              backgroundImage: `url(${hubData.bannerUrl || 'https://source.unsplash.com/random/1200x400?technology'})`
+              backgroundImage: `url(${hubData.bannerUrl})`
             }}
           />
           <CardContent className="p-6">
@@ -152,7 +153,7 @@ const JoinRequest = () => {
 
         {/* Request Card */}
         <CardContent className="bg-gray-800 p-4 rounded-lg border border-gray-700">
-          {hubData.hasRequested ? (
+          {hubData.status=="requested" ? (
             <Button 
               disabled 
               className="bg-gray-700 cursor-not-allowed text-gray-300"

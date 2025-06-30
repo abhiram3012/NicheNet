@@ -1,3 +1,5 @@
+require('dotenv').config(); // ⬅️ ✅ FIRST LINE
+
 const express = require('express');
 const path = require('path');
 const connectDB = require('./config/db');
@@ -17,15 +19,14 @@ connectDB();
 app.use(express.json());
 
 app.use(cors({
-  origin: 'http://localhost:8080', // ⬅️ Exactly match your frontend origin
-  credentials: true,               // ⬅️ Allow cookies / tokens
+  origin: 'http://localhost:8080', // update if frontend domain changes
+  credentials: true,
 }));
 
-
-// 🔓 Serve uploaded images from the /uploads/posts folder
+// Serve uploaded images
 app.use('/uploads/posts', express.static(path.join(__dirname, 'uploads/posts')));
 
-// API Routes
+// Routes
 app.use('/api/users', userRoutes);
 app.use('/api/hubs', hubRoutes);
 app.use('/api/posts', postRoutes);

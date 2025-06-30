@@ -83,13 +83,13 @@ const Hub = () => {
     const fetchExtraData = async () => {
       const currentUserId = getCurrentUserId();
 
-      const pollsRes = await fetch(`http://localhost:5000/api/polls/hub/${hubId}`, {
+      const pollsRes = await fetch(`${import.meta.env.VITE_API_URL}/api/polls/hub/${hubId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       const pollData = await pollsRes.json();
       setPolls(pollData);
 
-      const questionsRes = await fetch(`http://localhost:5000/api/questions/hub/${hubId}`, {
+      const questionsRes = await fetch(`${import.meta.env.VITE_API_URL}/api/questions/hub/${hubId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       const questionsData = await questionsRes.json();
@@ -102,7 +102,7 @@ const Hub = () => {
   useEffect(() => {
     const fetchHubData = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/hubs/${hubId}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/hubs/${hubId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         const data = await res.json();
@@ -122,7 +122,7 @@ const Hub = () => {
 
         setHubData(updatedHub);
 
-        const postsRes = await fetch(`http://localhost:5000/api/posts/hub/${hubId}`, {
+        const postsRes = await fetch(`${import.meta.env.VITE_API_URL}/api/posts/hub/${hubId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         const postsData = await postsRes.json();
@@ -139,7 +139,7 @@ const Hub = () => {
 
   const handleVote = async (pollId: string, optionText: string) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/polls/${pollId}/vote`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/polls/${pollId}/vote`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -159,13 +159,13 @@ const Hub = () => {
       const currentUserId = getCurrentUserId();
 
       const [userPostsRes, userPollsRes, userQuestionsRes] = await Promise.all([
-        fetch(`http://localhost:5000/api/posts/hub/${hubId}/user/${currentUserId}`, {
+        fetch(`${import.meta.env.VITE_API_URL}/api/posts/hub/${hubId}/user/${currentUserId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       }),
-        fetch(`http://localhost:5000/api/polls/hub/${hubId}/user/${currentUserId}`, {
+        fetch(`${import.meta.env.VITE_API_URL}/api/polls/hub/${hubId}/user/${currentUserId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       }),
-        fetch(`http://localhost:5000/api/questions/hub/${hubId}/user/${currentUserId}`, {
+        fetch(`${import.meta.env.VITE_API_URL}/api/questions/hub/${hubId}/user/${currentUserId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       }),
       ]);
@@ -185,7 +185,7 @@ const Hub = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/questions/hub/${hubId}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/questions/hub/${hubId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         const data = await res.json();

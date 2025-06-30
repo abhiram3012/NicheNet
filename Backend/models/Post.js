@@ -6,7 +6,6 @@ const postSchema = new mongoose.Schema({
   content: String,
   title: String,
   image: { type: String }, // <-- this is the new field to store uploaded image path
-  isAnonymous: { type: Boolean, default: false },
   upvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   downvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],

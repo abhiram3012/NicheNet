@@ -17,7 +17,7 @@ const AdminProtectedRoute = ({ children }: { children: JSX.Element }) => {
       const currentUserId = decoded?._id || decoded?.id;
 
       try {
-        const res = await axios.get(`http://localhost:5000/api/hubs/${hubId}`, {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/hubs/${hubId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

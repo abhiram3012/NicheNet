@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const connectDB = async () => {
   try {
     // Replace this with your actual MongoDB connection string
-    const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/hobbyhub';
+    const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/Nichenet';
 
     await mongoose.connect(mongoURI, {
       useNewUrlParser: true,

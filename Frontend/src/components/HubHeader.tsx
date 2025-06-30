@@ -37,11 +37,11 @@ const HubHeader: React.FC<HubHeaderProps> = ({ hubData }) => {
       };
 
       if (isJoined) {
-        await axios.post(`http://localhost:5000/api/hubs/${hubId}/leave`, {}, config);
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/hubs/${hubId}/leave`, {}, config);
         setIsJoined(false);
         setMemberCount(prev => Math.max(prev - 1, 0));
       } else {
-        await axios.post(`http://localhost:5000/api/hubs/${hubId}/join`, {}, config);
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/hubs/${hubId}/join`, {}, config);
         setIsJoined(true);
         setMemberCount(prev => prev + 1);
       }
@@ -62,7 +62,7 @@ const HubHeader: React.FC<HubHeaderProps> = ({ hubData }) => {
       const token = localStorage.getItem('token');
 
       const res = await axios.post(
-        `http://localhost:5000/api/hubs/${hubId}/upload-banner`,
+        `${import.meta.env.VITE_API_URL}/api/hubs/${hubId}/upload-banner`,
         formData,
         {
           headers: {
@@ -94,7 +94,7 @@ const HubHeader: React.FC<HubHeaderProps> = ({ hubData }) => {
       <div className="relative h-48 bg-gray-900 flex items-center justify-center overflow-hidden">
         {bannerUrl1 ? (
           <img
-            src={`http://localhost:5000${bannerUrl1}`}
+            src={`${bannerUrl1}`}
             alt="Banner"
             className="absolute inset-0 w-full h-full object-cover object-top"
           />

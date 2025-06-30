@@ -6,20 +6,19 @@ const Comment = require('../models/Comment');
 // Create a new post
 const createPost = async (req, res) => {
   try {
+    console.log("hello");
     const { title, hubId, content, isAnonymous } = req.body;
     const userId = req.user.id;
 
     const hub = await Hub.findById(hubId);
     if (!hub) return res.status(404).json({ error: 'Hub not found' });
-
     const post = new Post({
       author: userId,
       title,
       content,
-      image: req.file ? `/uploads/posts/${req.file.filename}` : null, // save file path
+      image: req.file ? req.file.path : null, // save file path
       createdBy: userId,
       hub: hubId,
-      isAnonymous: isAnonymous || false,
     });
 
     await post.save();

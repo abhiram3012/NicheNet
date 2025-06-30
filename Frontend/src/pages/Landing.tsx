@@ -4,8 +4,11 @@ import {
   Users, MessageCircle, Star, Zap, Shield, Heart, ArrowRight,
   Network, Camera, Music, Paintbrush, Lock, Code, Sparkles, ChevronRight
 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const NicheNetLogo = ({ size = 64 }) => {
+
+  const navigate = useNavigate();
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
@@ -247,12 +250,12 @@ const Landing = () => {
           </div>
           
           <div className="flex items-center space-x-4">
-            <a href="#">
+            <Link to='/signin'>
               <button className="text-gray-300 hover:text-white px-4 py-2 rounded-lg transition-colors">
                 Sign In
               </button>
-            </a>
-            <a href="#">
+            </Link>
+            <Link to='/signup'>
               <motion.button 
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-2 rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center"
                 whileHover={{ scale: 1.05 }}
@@ -261,7 +264,7 @@ const Landing = () => {
                 Get Started
                 <ArrowRight className="ml-2 w-4 h-4" />
               </motion.button>
-            </a>
+            </Link>
           </div>
         </div>
       </header>
@@ -311,16 +314,16 @@ const Landing = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <a href="#">
+                <Link to='/signup'>
                   <motion.button 
                     className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-lg px-8 py-4 rounded-xl flex items-center transition-all shadow-lg hover:shadow-xl"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    Join NicheNet Free
+                    Join NicheNet 
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </motion.button>
-                </a>
+                </Link>
                 <motion.button 
                   className="border border-gray-600 text-gray-300 text-lg px-8 py-4 rounded-xl transition-colors hover:bg-gray-700/50"
                   whileHover={{ scale: 1.05 }}
@@ -374,61 +377,6 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Popular Hubs Section */}
-      <section className="px-4 py-16 md:py-24">
-        <div className="max-w-7xl mx-auto">
-          <motion.div 
-            className="text-center mb-16"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Popular <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Niche Communities</span>
-            </h2>
-            <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-              Join thousands of passionate members in these thriving communities
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {popularHubs.map((hub, index) => (
-              <motion.div 
-                key={index}
-                className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl p-6 hover:shadow-xl transition-all border border-gray-700"
-                whileHover={{ y: -5, borderColor: '#818cf8' }}
-                initial={{ y: 30, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <div className="flex items-center gap-4 mb-5">
-                  <div className={`w-12 h-12 bg-gradient-to-br ${hub.color} rounded-xl flex items-center justify-center`}>
-                    <hub.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white">{hub.name}</h3>
-                    <p className="text-gray-400 text-sm">{hub.members} members</p>
-                  </div>
-                </div>
-                <p className="text-gray-300 mb-6">
-                  Join passionate enthusiasts in the {hub.name} community to share, learn, and connect with others who share your interests.
-                </p>
-                <div className="flex justify-between items-center">
-                  <div className="flex -space-x-3">
-                    {[...Array(4)].map((_, i) => (
-                      <div key={i} className="w-8 h-8 rounded-full bg-gray-700 border-2 border-gray-800"></div>
-                    ))}
-                  </div>
-                  <button className="text-blue-400 hover:text-blue-300 flex items-center gap-1">
-                    Join Community <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="px-4 py-16 md:py-24 bg-gradient-to-r from-blue-600 to-purple-600 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://assets-global.website-files.com/5f4ec532319820f7c2ccd7a3/65f9d3d5a8e2b5f8f4b7f9f0_Grid.svg')] bg-[length:100px] opacity-20"></div>
@@ -446,17 +394,17 @@ const Landing = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="#">
+            <Link to='/signup'>
               <motion.button 
                 className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                Create Free Account
+                Create Account
                 <ArrowRight className="ml-2 w-5 h-5" />
               </motion.button>
-            </a>
-            <a href="#">
+            </Link>
+            <Link to='/signin'>
               <motion.button 
                 className="bg-transparent border-2 border-white text-white hover:bg-white/10 text-lg px-8 py-4 rounded-xl transition-colors"
                 whileHover={{ scale: 1.05 }}
@@ -464,7 +412,7 @@ const Landing = () => {
               >
                 Sign In
               </motion.button>
-            </a>
+            </Link>
           </div>
 
           <div className="mt-10 p-4 bg-white/10 rounded-xl inline-block backdrop-blur-sm">

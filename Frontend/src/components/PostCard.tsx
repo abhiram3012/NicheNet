@@ -54,7 +54,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, hubCreatorId }) => {
 
   const fetchPostAgain = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/posts/${postId}`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/posts/${postId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -71,7 +71,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, hubCreatorId }) => {
 
     setLoading(true);
     try {
-      const endpoint = type === 'up' ? `http://localhost:5000/api/posts/${postId}/like` : `http://localhost:5000/api/posts/${postId}/dislike`;
+      const endpoint = type === 'up' ? `${import.meta.env.VITE_API_URL}/api/posts/${postId}/like` : `${import.meta.env.VITE_API_URL}/api/posts/${postId}/dislike`;
       const token = localStorage.getItem('token');
       await axios.put(endpoint, {}, {
         headers: {
@@ -88,9 +88,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, hubCreatorId }) => {
 
   return (
     <Card
-      className={`bg-gray-800 hover:shadow-md transition-shadow border border-gray-700 ${
-        isCreator ? 'ring-2 ring-yellow-500/60 border-yellow-500/50' : ''
-      }`}
+      className={`bg-gray-800 hover:shadow-md transition-shadow border border-gray-700 `}
     >
       <CardContent className="p-6">
         <div className="flex gap-4">
@@ -123,18 +121,10 @@ const PostCard: React.FC<PostCardProps> = ({ post, hubCreatorId }) => {
             <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
               <div className="flex items-center gap-2">
                 <span
-                  className={`font-medium ${
-                    isCreator ? 'text-yellow-400' : 'text-gray-200'
-                  }`}
+                  className={`font-medium text-gray-200`}
                 >
-                  {isAnonymous ? 'Anonymous' : author.username}
+                  {author.username}
                 </span>
-                {isCreator && (
-                  <Badge className="bg-yellow-900/30 text-yellow-300 text-xs px-2 py-1 flex items-center gap-1">
-                    <Crown className="w-3 h-3" />
-                    Creator
-                  </Badge>
-                )}
               </div>
               <span>•</span>
               <span>{timeAgo(timePosted)}</span>
@@ -154,7 +144,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, hubCreatorId }) => {
             {image && (
               <div className="mb-3">
                 <img
-                  src={`http://localhost:5000${image}`}
+                  src={`${image}`}
                   alt="Post"
                   className="rounded-lg max-w-md h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
                 />

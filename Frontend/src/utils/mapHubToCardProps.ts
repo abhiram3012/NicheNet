@@ -9,7 +9,7 @@ export interface Hub {
   lastActive?: string;
   activeUsers?: number;
   category?: string;
-  imageUrl?: string;
+  bannerUrl?: string;
 }
 
 export interface HubCardProps {
@@ -24,7 +24,7 @@ export interface HubCardProps {
   isPrivate?: boolean;
   isCreator?: boolean;
   category: string;
-  imageUrl?: string;
+  bannerUrl?: string;
 }
 
 export const mapHubToCardProps = (
@@ -41,5 +41,5 @@ export const mapHubToCardProps = (
   isJoined: hub.members.includes(currentUserId),
   isCreator: hub.creator === currentUserId,
   category: hub.category || 'General',
-  imageUrl: hub.imageUrl,
+  bannerUrl: hub.bannerUrl,
 });

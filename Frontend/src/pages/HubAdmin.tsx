@@ -50,7 +50,7 @@ const HubAdmin = () => {
   const handleUpdateRules = async (data) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.put(`http://localhost:5000/api/hubs/${hubId}/rules`, 
+      const res = await axios.put(`${import.meta.env.VITE_API_URL}/api/hubs/${hubId}/rules`, 
         data,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -64,7 +64,7 @@ const HubAdmin = () => {
   const handleEditHubInfo = async (data) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.put(`http://localhost:5000/api/hubs/${hubId}/info`, 
+      const res = await axios.put(`${import.meta.env.VITE_API_URL}/api/hubs/${hubId}/info`, 
         data,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -78,7 +78,7 @@ const HubAdmin = () => {
   const handleCreateAnnouncement = async (content) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`http://localhost:5000/api/hubs/${hubId}/announcements`, 
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/hubs/${hubId}/announcements`, 
         { content },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -92,7 +92,7 @@ const HubAdmin = () => {
   useEffect(() => {
     const fetchActivities = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/hubs/${hubId}/recent-activities`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/hubs/${hubId}/recent-activities`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }})
@@ -118,9 +118,9 @@ const HubAdmin = () => {
         };
 
         const [overviewRes, requestsRes, membersRes] = await Promise.all([
-          axios.get(`http://localhost:5000/api/hubs/${hubId}/admin/overview`, { headers }),
-          axios.get(`http://localhost:5000/api/hubs/${hubId}/admin/join-requests`, { headers }),
-          axios.get(`http://localhost:5000/api/hubs/${hubId}/admin/members`, { headers }),
+          axios.get(`${import.meta.env.VITE_API_URL}/api/hubs/${hubId}/admin/overview`, { headers }),
+          axios.get(`${import.meta.env.VITE_API_URL}/api/hubs/${hubId}/admin/join-requests`, { headers }),
+          axios.get(`${import.meta.env.VITE_API_URL}/api/hubs/${hubId}/admin/members`, { headers }),
         ]);
 
         setHubData(overviewRes.data);
@@ -140,7 +140,7 @@ const HubAdmin = () => {
   const handleRemoveUser = async (userId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/hubs/${hubId}/remove-member/${userId}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/hubs/${hubId}/remove-member/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -172,7 +172,7 @@ const HubAdmin = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        `http://localhost:5000/api/hubs/${hubId}/${action}/${requestId}`,
+        `${import.meta.env.VITE_API_URL}/api/hubs/${hubId}/${action}/${requestId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

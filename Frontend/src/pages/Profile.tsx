@@ -40,7 +40,7 @@ const Profile = () => {
   React.useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/auth/me', {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
@@ -65,7 +65,7 @@ const Profile = () => {
     setUsernameStatus(null);
     
     try {
-      const res = await fetch('http://localhost:5000/api/auth/me/username', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me/username`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -101,7 +101,7 @@ const Profile = () => {
     setPasswordStatus(null);
     
     try {
-      const res = await fetch('http://localhost:5000/api/auth/me/password', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me/password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -132,7 +132,7 @@ const Profile = () => {
     setBioStatus(null);
     
     try {
-      const res = await fetch('http://localhost:5000/api/auth/me/bio', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me/bio`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -20,7 +20,7 @@ const PostDetails = () => {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/posts/${postId}`, {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/posts/${postId}`, {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -38,7 +38,7 @@ const PostDetails = () => {
 
   const fetchPostAgain = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/posts/${postId}`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/posts/${postId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -53,7 +53,7 @@ const PostDetails = () => {
     if (!newComment.trim()) return;
 
     try {
-      await axios.post(`http://localhost:5000/api/comments/`, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/comments/`, {
         postId,
         content: newComment,
       }, {
@@ -75,8 +75,8 @@ const PostDetails = () => {
     setVotingLoading(true);
     try {
       const endpoint = type === 'up'
-        ? `http://localhost:5000/api/posts/${postId}/like`
-        : `http://localhost:5000/api/posts/${postId}/dislike`;
+        ? `${import.meta.env.VITE_API_URL}/api/posts/${postId}/like`
+        : `${import.meta.env.VITE_API_URL}/api/posts/${postId}/dislike`;
 
       await axios.put(endpoint, {}, {
         headers: {
@@ -188,7 +188,7 @@ const PostDetails = () => {
                 {post.image && (
                   <div className="mb-4">
                     <img 
-                      src={`http://localhost:5000${post.image}`} 
+                      src={`${post.image}`} 
                       alt="Post content"
                       className="rounded-lg w-full max-w-2xl object-cover"
                     />

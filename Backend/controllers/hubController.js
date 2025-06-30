@@ -1,6 +1,6 @@
 const User = require('../models/User');
 const Post = require('../models/Post'); // assuming Post model exists
-const Hub = require('../models/hub');
+const Hub = require('../models/Hub');
 const Poll = require('../models/Poll'); // Assuming exists
 const Question = require('../models/Question'); // Assuming exists
 const Announcement = require('../models/Announcement'); // Assuming exists
@@ -294,7 +294,7 @@ const updateHubBanner = async (req, res) => {
     if (!req.file)
       return res.status(400).json({ error: 'No banner image uploaded' });
 
-    const bannerUrl = `/uploads/posts/${req.file.filename}`;
+    const bannerUrl = req.file ? req.file.path : null;
     hub.bannerUrl = bannerUrl;
     await hub.save();
 

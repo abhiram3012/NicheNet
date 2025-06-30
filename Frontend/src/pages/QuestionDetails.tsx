@@ -35,7 +35,7 @@ const QuestionDetails = () => {
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/questions/${questionId}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/questions/${questionId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         const data = await res.json();

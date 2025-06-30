@@ -26,7 +26,7 @@ const {
   updateHubRules,
 } = require('../controllers/hubController');
 const upload = require('../middleware/upload');
-const hub = require('../models/hub');
+const Hub = require('../models/Hub');
 
 // Create a new hub (authenticated users)
 router.post('/create', authenticate, createHub);
@@ -44,7 +44,7 @@ router.get('/suggestions', authenticate, getHubSuggestions);
 router.get('/search', async (req, res) => {
   const { query } = req.query;
   try {
-    const hubs = await hub.find({
+    const hubs = await Hub.find({
       name: { $regex: query, $options: 'i' } // case-insensitive match
     });
     res.json(hubs);

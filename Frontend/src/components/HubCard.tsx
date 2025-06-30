@@ -17,7 +17,7 @@ const HubCard: React.FC<HubCardProps> = ({
   isPrivate,
   isCreator,
   category,
-  imageUrl
+  bannerUrl
 }) => {
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:scale-105 border border-gray-700 bg-gray-800">
@@ -26,9 +26,9 @@ const HubCard: React.FC<HubCardProps> = ({
           <div className="flex items-center space-x-3">
             <div 
               className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-700 flex items-center justify-center"
-              style={imageUrl ? { backgroundImage: `url(${imageUrl})`, backgroundSize: 'cover' } : {}}
+              style={bannerUrl ? { backgroundImage: `url(${bannerUrl})`, backgroundSize: 'cover' } : {}}
             >
-              {!imageUrl && (
+              {!bannerUrl && (
                 <span className="text-white font-bold text-lg">
                   {name[0].toUpperCase()}
                 </span>

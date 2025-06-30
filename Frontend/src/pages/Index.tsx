@@ -27,9 +27,9 @@ const Index = () => {
 
       try {
         const [createdRes, joinedRes, discoverRes] = await Promise.all([
-          fetch(`http://localhost:5000/api/hubs/my-created`, { headers }),
-          fetch(`http://localhost:5000/api/users/joined-hubs`, { headers }),
-          fetch(`http://localhost:5000/api/hubs/suggestions`, { headers })
+          fetch(`${import.meta.env.VITE_API_URL}/api/hubs/my-created`, { headers }),
+          fetch(`${import.meta.env.VITE_API_URL}/api/users/joined-hubs`, { headers }),
+          fetch(`${import.meta.env.VITE_API_URL}/api/hubs/suggestions`, { headers })
         ]);
 
         const [createdData, joinedData, discoverData] = await Promise.all([
@@ -123,7 +123,7 @@ const Index = () => {
                     isJoined={hub.members.includes(currentUserId)}
                     isCreator={hub.creator === currentUserId}
                     category={hub.category || 'General'}
-                    imageUrl={hub.imageUrl}
+                    bannerUrl={hub.bannerUrl}
                   />
                 </div>
               ))}
@@ -174,7 +174,7 @@ const Index = () => {
                     isJoined={true}
                     isCreator={hub.creator === currentUserId}
                     category={hub.category || 'General'}
-                    imageUrl={hub.imageUrl || hub.bannerUrl}
+                    bannerUrl={hub.bannerUrl || hub.bannerUrl}
                   />
                 </div>
               ))}
@@ -198,6 +198,7 @@ const Index = () => {
         </section>
 
         {/* Discover Hubs */}
+        {/* Discover Hubs */}
         <section ref={discoverRef} className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -208,38 +209,52 @@ const Index = () => {
               See all <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           </div>
-          
+
           <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-2xl p-6 shadow-sm">
-            <div className="mb-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {discoverHubs.slice(0,4).map((hub) => (
-                  <div key={hub._id} className="transition-all duration-300 hover:shadow-lg hover:scale-[1.01]">
-                    <HubCard
-                      id={hub._id}
-                      name={hub.name}
-                      description={hub.description}
-                      memberCount={hub.members?.length || hub.memberCount || 0}
-                      newPosts={hub.newPosts || 0}
-                      lastActive={hub.lastActive || 'unknown'}
-                      activeUsers={hub.activeUsers || 0}
-                      isJoined={false}
-                      isPrivate={hub.isPrivate || false}
-                      isCreator={hub.creator === currentUserId}
-                      category={hub.category || 'General'}
-                      imageUrl={hub.imageUrl || hub.bannerUrl}
-                    />
-                  </div>
-                ))}
+            {discoverHubs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16">
+                {/* You can use an illustration or icon here if you'd like */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-16 w-16 text-gray-500 mb-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M12 4.354a4.5 4.5 0 100 8.792m0 0v2.354m0 0l2 2m-2-2l-2 2"
+                  />
+                </svg>
+                <h3 className="text-lg font-semibold text-gray-300">No hubs found</h3>
+                <p className="text-gray-500 mt-1">Check back later or create a new hub to get started!</p>
               </div>
-            </div>
-            
-            <div className="text-center pt-4">
-              <Button 
-                className="bg-gradient-to-r from-indigo-900/30 to-purple-900/30 border border-dashed border-indigo-700 text-indigo-300 hover:bg-indigo-900/50 px-8 py-6 rounded-xl transition-all duration-300 hover:shadow-md"
-              >
-                🎲 Explore Random Hub
-              </Button>
-            </div>
+            ) : (
+              <div className="mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {discoverHubs.slice(0, 4).map((hub) => (
+                    <div key={hub._id} className="transition-all duration-300 hover:shadow-lg hover:scale-[1.01]">
+                      <HubCard
+                        id={hub._id}
+                        name={hub.name}
+                        description={hub.description}
+                        memberCount={hub.members?.length || hub.memberCount || 0}
+                        newPosts={hub.newPosts || 0}
+                        lastActive={hub.lastActive || 'unknown'}
+                        activeUsers={hub.activeUsers || 0}
+                        isJoined={false}
+                        isPrivate={hub.isPrivate || false}
+                        isCreator={hub.creator === currentUserId}
+                        category={hub.category || 'General'}
+                        bannerUrl={hub.bannerUrl || hub.bannerUrl}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </section>
       </main>
