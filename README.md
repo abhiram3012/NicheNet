@@ -1,26 +1,27 @@
-# NicheNet – Interest-Based Social Networking Platform
+# 🌐 NicheNet — Interest-Based Social Networking Platform
 
-🚧 This project is currently under active development.
+✅ **This project is completed and live!**
 
-## Description
-NicheNet is a MERN stack-based social networking platform that allows users to join or create interest-based communities called "Hubs."
+## 💡 Description
+**NicheNet** is a social networking platform built with the MERN stack, designed to help people connect through shared interests. Users can join or create communities called **"Hubs"**, where they can engage in discussions, share content, and build meaningful connections.
 
-## Features (Planned / In Progress)
-- Public and private hubs
-- Anonymous & public posts
-- Comment threads and voting
-- Reputation-based user roles
-- Admin moderation
+## ✨ Key Features
+- Create and join public or private Hubs
+- Make anonymous or public posts
+- Nested comment threads with upvoting/downvoting
+- Reputation-based user roles and achievements
+- Admin and moderator controls for content and user management
 
-## Tech Stack
-- React.js
-- Node.js
-- Express.js
-- MongoDB
-- Tailwind CSS
+## 🛠️ Tech Stack
+- **Frontend**: React.js, Tailwind CSS
+- **Backend**: Node.js, Express.js
+- **Database**: MongoDB
 
-## Status
-Work in Progress
+## 🚀 Status
+✅ Completed and deployed
 
-## Author
+## 🌎 Live Link
+[Visit NicheNet](https://nichenet-frontend.onrender.com/) <!-- Replace `#` with your actual deployed URL -->
+
+## 👤 Author
 Abhiram Goud
